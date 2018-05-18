@@ -1,5 +1,0 @@
-axoloti.tgz
-ChibiOS_2.6.9.zip
-dfu-util-0.8.tar.gz
-gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2
-libusb-1.0.19.tar.bz2

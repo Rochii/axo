@@ -1,0 +1,4 @@
+a0937a621b67690323127075c3b90a89  ChibiOS_2.6.9.zip
+fc6daf6b0ee57d7e40ffa3e8111023d1  dfu-util-0.8.tar.gz
+6d5e1ae27607bab87bd324c9be2df17a  gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2
+f9e2bb5879968467e5ca756cb4e1fa7e  libusb-1.0.19.tar.bz2
