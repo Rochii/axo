@@ -1,6 +1,6 @@
 TOP=.
 
-REPOS=$(TOP)/../repos
+REPOS=$(TOP)/repos
 BUILD=$(TOP)/axoloti
 DL=$(TOP)/dl
 
@@ -20,18 +20,34 @@ PATCH_CMD = \
 COPY_CMD = \
 	cd files; tar -c -f - * | (cd ../$(BUILD) ; tar xfp -)
 
+define update_repo
+	if [ ! -d $(REPOS)/$(1)/.git ]; then \
+		git -C $(REPOS) clone git@github.com:axoloti/$(1).git; \
+	else \
+		git -C $(REPOS)/$(1) pull; \
+	fi 
+endef
+
+.PHONY: all repos tarball, clean
+
 all:
-	tar zxvf $(DL)/axoloti.tgz 
+	tar zxf $(DL)/axoloti.tgz 
 	$(PATCH_CMD)
 	$(COPY_CMD)
-	cp $(DL)/$(CHIBIOS) $(BUILD)/platform_linux/src
-	cp $(DL)/$(GCC) $(BUILD)/platform_linux/src
-	cp $(DL)/$(DFU) $(BUILD)/platform_linux/src
-	cp $(DL)/$(LIBUSB) $(BUILD)/platform_linux/src
+	-cp $(DL)/$(CHIBIOS) $(BUILD)/platform_linux/src
+	-cp $(DL)/$(GCC) $(BUILD)/platform_linux/src
+	-cp $(DL)/$(DFU) $(BUILD)/platform_linux/src
+	-cp $(DL)/$(LIBUSB) $(BUILD)/platform_linux/src
 	cd $(BUILD)/platform_linux; ./build.sh
 
+repos:
+	if [ ! -d $(REPOS) ]; then mkdir $(REPOS); fi
+	$(call update_repo,axoloti)
+	$(call update_repo,axoloti-contrib)
+	$(call update_repo,axoloti-factory)
+
 tarball:
-	tar -C $(REPOS) --exclude=.git -zcvf $(DL)/axoloti.tgz axoloti
+	tar -C $(REPOS) --exclude=.git -zcf $(DL)/axoloti.tgz axoloti
 
 clean:
 	-rm -rf $(BUILD)
