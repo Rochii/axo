@@ -1,0 +1,31 @@
+--- ./platform_linux/build.sh	2018-05-18 07:58:18.450090424 -0700
++++ ./platform_linux/build.sh	2018-05-18 08:01:04.463142442 -0700
+@@ -35,7 +35,7 @@
+ 
+ case $OS in
+     Ubuntu|Debian|DebianJessie32bit)
+-        echo "apt-get install -y libtool libudev-dev automake autoconf ant curl lib32z1 lib32ncurses5 lib32bz2-1.0"
++        echo "apt-get install -y libtool libudev-dev automake autoconf ant curl lib32z1 lib32ncurses5 libbz2-1.0"
+       if [ $OS==DebianJessie32bit ]; then
+             sudo apt-get install -y libtool libudev-dev automake autoconf \
+                ant curl
+@@ -47,7 +47,7 @@
+         # On more recent versions of Ubuntu
+         # the libbz2 package is multi-arch
+         install_lib_bz2() {
+-            sudo apt-get install -y lib32bz2-1.0
++            sudo apt-get install -y libbz2-1.0
+         }
+         set +e
+         if ! install_lib_bz2; then
+@@ -180,8 +180,8 @@
+ 
+ case $OS in
+     Ubuntu|Debian)
+-        echo "apt-get install openjdk-7-jdk"
+-        sudo apt-get install openjdk-7-jdk
++        echo "apt-get install openjdk-8-jdk"
++        sudo apt-get install openjdk-8-jdk
+         ;;
+     Archlinux)
+         echo "pacman -Syy jdk7-openjdk"
