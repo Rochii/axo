@@ -38,6 +38,7 @@ all:
 	-cp $(DL)/$(GCC) $(BUILD)/platform_linux/src
 	-cp $(DL)/$(DFU) $(BUILD)/platform_linux/src
 	-cp $(DL)/$(LIBUSB) $(BUILD)/platform_linux/src
+	-cp axoloti.prefs $(BUILD)
 	cd $(BUILD)/platform_linux; ./build.sh
 
 repos:
@@ -47,7 +48,7 @@ repos:
 	$(call update_repo,axoloti-factory)
 
 tarball:
-	tar -C $(REPOS) --exclude=.git -zcf $(DL)/axoloti.tgz axoloti
+	tar -C $(REPOS) -zcf $(DL)/axoloti.tgz axoloti
 
 clean:
 	-rm -rf $(BUILD)
