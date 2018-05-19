@@ -1,10 +1,12 @@
-<preferences appVersion="22168">
+<preferences appVersion="1.0.12">
    <CurrentFileDirectory></CurrentFileDirectory>
    <PollInterval>50</PollInterval>
    <MouseDialAngular>false</MouseDialAngular>
    <MouseDoNotRecenterWhenAdjustingControls>false</MouseDoNotRecenterWhenAdjustingControls>
    <ExpertMode>false</ExpertMode>
    <recentFiles/>
+   <RuntimeDir>/home/jasonh/work/axo/axoloti</RuntimeDir>
+   <FirmwareDir>/home/jasonh/work/axo/axoloti/firmware</FirmwareDir>
    <FavouriteDir></FavouriteDir>
    <ControllerObject></ControllerObject>
    <ControllerEnabled>false</ControllerEnabled>
@@ -17,15 +19,20 @@
       <UserId></UserId>
       <Password></Password>
       <AutoSync>false</AutoSync>
+      <Revision></Revision>
+      <ContributorPrefix></ContributorPrefix>
    </gitlib>
    <filelib>
       <Id>home</Id>
       <Type>local</Type>
       <LocalLocation>/home/jasonh/work/axo/work/</LocalLocation>
       <Enabled>true</Enabled>
+      <RemoteLocation></RemoteLocation>
       <UserId></UserId>
       <Password></Password>
       <AutoSync>false</AutoSync>
+      <Revision></Revision>
+      <ContributorPrefix></ContributorPrefix>
    </filelib>
    <gitlib>
       <Id>community</Id>
@@ -36,5 +43,7 @@
       <UserId></UserId>
       <Password></Password>
       <AutoSync>false</AutoSync>
+      <Revision></Revision>
+      <ContributorPrefix></ContributorPrefix>
    </gitlib>
 </preferences>
