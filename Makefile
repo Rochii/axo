@@ -28,7 +28,7 @@ define update_repo
 	fi 
 endef
 
-.PHONY: all repos tarball, clean
+.PHONY: all repos tarball update clean
 
 all:
 	tar zxf $(DL)/axoloti.tgz 
@@ -49,6 +49,8 @@ repos:
 
 tarball:
 	tar -C $(REPOS) -zcf $(DL)/axoloti.tgz axoloti
+
+update: repos tarball
 
 clean:
 	-rm -rf $(BUILD)
