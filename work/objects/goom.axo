@@ -3,7 +3,6 @@
       <sDescription>goom wave oscillator</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
-      <helpPatch></helpPatch>
       <inlets>
          <frac32.bipolar name="pitch" description="pitch"/>
          <frac32buffer name="freq" description="frequency"/>
@@ -19,14 +18,20 @@
          <frac32.u.map name="slope"/>
       </params>
       <attribs/>
-      <code.declaration><![CDATA[uint32_t Phase;]]></code.declaration>
-      <code.init><![CDATA[Phase = 0;]]></code.init>
-      <code.krate><![CDATA[int32_t freq;
-   MTOFEXTENDED(param_pitch + inlet_pitch,freq);]]></code.krate>
-      <code.srate><![CDATA[Phase += freq + inlet_freq;
-int32_t r;
-int32_t p2 = Phase + (inlet_phase<<4);
-SINE2TINTERP(p2,r)
-outlet_wave= (r>>4);]]></code.srate>
+      <includes>
+         <include>./goom.h</include>
+      </includes>
+      <code.declaration><![CDATA[struct goom_data local_data;]]></code.declaration>
+      <code.init><![CDATA[goom_init(&local_data);]]></code.init>
+      <code.krate><![CDATA[goom_dsp(
+  &local_data,
+  inlet_pitch,
+  inlet_freq,
+  inlet_phase,
+  outlet_wave,
+  param_pitch,
+  param_duty,
+  param_slope
+);]]></code.krate>
    </obj.normal>
 </objdefs>
