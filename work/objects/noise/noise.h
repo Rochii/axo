@@ -12,27 +12,31 @@ https://en.wikipedia.org/wiki/Brownian_noise
 */
 //-----------------------------------------------------------------------------
 
-#ifndef NOISE_H
-#define NOISE_H
+#ifndef DEADSY_NOISE_H
+#define DEADSY_NOISE_H
 
 //-----------------------------------------------------------------------------
 
-struct noise {
-	float b0, b1, b2, b3, b4, b5, b6;
-};
+// convert a q1.31 to a float32
+static inline float q31_to_float(int32_t op1) {
+	float fop1 = *(float *)(&op1);
+	__ASM volatile ("VCVT.F32.S32 %0, %0, 31":"+w" (fop1));
+	return fop1;
+}
 
-static inline void noise_init(struct noise *ptr) {
-	memset(ptr, 0, sizeof(struct noise));
+// return a float [-1, 1)
+static inline float rand_float(void) {
+	return q31_to_float(rand_s32());
 }
 
 //-----------------------------------------------------------------------------
 
-// return a float from -1..1
-static inline float rand_float(void) {
-	uint32_t i = (uint32_t) rand_s32();
-	i |= (i << 1) & 0x80000000;
-	i = (i & 0x807fffff) | (126 << 23);
-	return *(float *)&i;
+struct noise_state {
+	float b0, b1, b2, b3, b4, b5, b6;
+};
+
+static inline void noise_init(struct noise_state *s) {
+	memset(s, 0, sizeof(struct noise_state));
 }
 
 //-----------------------------------------------------------------------------
@@ -40,26 +44,26 @@ static inline float rand_float(void) {
 // white noise (spectral density = k)
 static inline void white_noise(int32_t * out) {
 	for (size_t i = 0; i < BUFSIZE; i++) {
-		out[i] = float_to_q27(rand_float());
+		out[i] = rand_s32() >> 4;
 	}
 }
 
-// brown noise (spectral density = k/f*f)
-static inline void brown_noise(struct noise *ptr, int32_t * out) {
-	float b0 = ptr->b0;
+// brown noise (spectral density = k/f*f
+static inline void brown_noise(struct noise_state *s, int32_t * out) {
+	float b0 = s->b0;
 	for (size_t i = 0; i < BUFSIZE; i++) {
 		float white = rand_float();
 		b0 = (b0 + (0.02f * white)) * (1.f / 1.02f);
 		out[i] = float_to_q27(b0 * (1.f / 0.38f));
 	}
-	ptr->b0 = b0;
+	s->b0 = b0;
 }
 
 // pink noise (spectral density = k/f): fast, inaccurate version
-static inline void pink_noise1(struct noise *ptr, int32_t * out) {
-	float b0 = ptr->b0;
-	float b1 = ptr->b1;
-	float b2 = ptr->b2;
+static inline void pink_noise1(struct noise_state *s, int32_t * out) {
+	float b0 = s->b0;
+	float b1 = s->b1;
+	float b2 = s->b2;
 	for (size_t i = 0; i < BUFSIZE; i++) {
 		float white = rand_float();
 		b0 = 0.99765f * b0 + white * 0.0990460f;
@@ -68,20 +72,20 @@ static inline void pink_noise1(struct noise *ptr, int32_t * out) {
 		float pink = b0 + b1 + b2 + white * 0.1848f;
 		out[i] = float_to_q27(pink * (1.f / 10.4f));
 	}
-	ptr->b0 = b0;
-	ptr->b1 = b1;
-	ptr->b2 = b2;
+	s->b0 = b0;
+	s->b1 = b1;
+	s->b2 = b2;
 }
 
 // pink noise (spectral density = k/f): slow, accurate version
-static inline void pink_noise2(struct noise *ptr, int32_t * out) {
-	float b0 = ptr->b0;
-	float b1 = ptr->b1;
-	float b2 = ptr->b2;
-	float b3 = ptr->b3;
-	float b4 = ptr->b4;
-	float b5 = ptr->b5;
-	float b6 = ptr->b6;
+static inline void pink_noise2(struct noise_state *s, int32_t * out) {
+	float b0 = s->b0;
+	float b1 = s->b1;
+	float b2 = s->b2;
+	float b3 = s->b3;
+	float b4 = s->b4;
+	float b5 = s->b5;
+	float b6 = s->b6;
 	for (size_t i = 0; i < BUFSIZE; i++) {
 		float white = rand_float();
 		b0 = 0.99886f * b0 + white * 0.0555179f;
@@ -94,17 +98,17 @@ static inline void pink_noise2(struct noise *ptr, int32_t * out) {
 		b6 = white * 0.115926f;
 		out[i] = float_to_q27(pink * (1.f / 10.2f));
 	}
-	ptr->b0 = b0;
-	ptr->b1 = b1;
-	ptr->b2 = b2;
-	ptr->b3 = b3;
-	ptr->b4 = b4;
-	ptr->b5 = b5;
-	ptr->b6 = b6;
+	s->b0 = b0;
+	s->b1 = b1;
+	s->b2 = b2;
+	s->b3 = b3;
+	s->b4 = b4;
+	s->b5 = b5;
+	s->b6 = b6;
 }
 
 //-----------------------------------------------------------------------------
 
-#endif				// NOISE_H
+#endif				// DEADSY_NOISE_H
 
 //-----------------------------------------------------------------------------

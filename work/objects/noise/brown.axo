@@ -13,8 +13,8 @@
       <includes>
          <include>./noise.h</include>
       </includes>
-      <code.declaration><![CDATA[struct noise data;]]></code.declaration>
-      <code.init><![CDATA[noise_init(&data);]]></code.init>
-      <code.krate><![CDATA[brown_noise(&data, outlet_wave);]]></code.krate>
+      <code.declaration><![CDATA[struct noise_state state;]]></code.declaration>
+      <code.init><![CDATA[noise_init(&state);]]></code.init>
+      <code.krate><![CDATA[brown_noise(&state, outlet_wave);]]></code.krate>
    </obj.normal>
 </objdefs>

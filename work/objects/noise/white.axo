@@ -1,6 +1,6 @@
 <objdefs appVersion="1.0.12">
    <obj.normal id="white" uuid="8aecb7f5-6da2-43bf-8224-62af8b295067">
-      <sDescription>Uniform distribution white noise.</sDescription>
+      <sDescription>White Noise (spectral density = k)</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
       <inlets/>
