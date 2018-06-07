@@ -6,7 +6,8 @@ import subprocess
 import os
 
 src_dirs = (
-  'work/objects',
+  'work/objects/noise',
+  'work/objects/osc',
 )
 
 src_filter_out = (
@@ -32,7 +33,7 @@ def get_files(dirs, filter_out):
   return [f for f in files if f not in filter_out]
 
 def format(f):
-  exec_cmd('%s -br -ce -brf -gnu -l10000 %s' % (indent_exec, f))
+  exec_cmd('%s -brf -linux -l10000 %s' % (indent_exec, f))
   os.unlink('%s~' % f)
 
 def main():

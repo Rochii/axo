@@ -1,0 +1,18 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="white" uuid="8aecb7f5-6da2-43bf-8224-62af8b295067">
+      <sDescription>Uniform distribution white noise.</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets>
+         <frac32buffer.bipolar name="wave" description="white noise"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs/>
+      <includes>
+         <include>./noise.h</include>
+      </includes>
+      <code.krate><![CDATA[white_noise(outlet_wave);]]></code.krate>
+   </obj.normal>
+</objdefs>

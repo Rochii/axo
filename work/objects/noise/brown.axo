@@ -1,0 +1,20 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="brown" uuid="a0d6a624-bc27-41bf-aaec-5e9489d409d0">
+      <sDescription>Brown Noise (spectral density = k/f*f)</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets>
+         <frac32buffer.bipolar name="wave" description="brown noise"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs/>
+      <includes>
+         <include>./noise.h</include>
+      </includes>
+      <code.declaration><![CDATA[struct noise data;]]></code.declaration>
+      <code.init><![CDATA[noise_init(&data);]]></code.init>
+      <code.krate><![CDATA[brown_noise(&data, outlet_wave);]]></code.krate>
+   </obj.normal>
+</objdefs>
