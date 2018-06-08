@@ -74,10 +74,10 @@ name | type
  name | type 
   --- | --- 
  bin32 | 
- frac32.u.map | 
+ frac32.u.map | q11.21 restricted to [0..64)
  int32.mini | 
  frac32.s.map.kpitch | 
- frac32.s.map | 
+ frac32.s.map | q11.21 restricted to [-64 .. 64)
  bool32.tgl | 
  frac32.u.map.squaregain | 
  bool32.mom | 
@@ -120,5 +120,3 @@ name | type
  frac32buffer.positive | 
  bool32.risingfalling | 
  frac32buffer | 
-
-

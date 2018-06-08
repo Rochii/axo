@@ -1,35 +1,30 @@
 <objdefs appVersion="1.0.12">
    <obj.normal id="goom" uuid="61cca550-c062-49f8-9afe-784e5723c925">
-      <sDescription>goom wave oscillator</sDescription>
+      <sDescription>goom wave oscillator
+See: https://www.quinapalus.com/goom.html</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
-      <inlets>
-         <frac32.bipolar name="pitch" description="pitch"/>
-         <frac32buffer name="freq" description="frequency"/>
-         <frac32buffer name="phase" description="phase"/>
-      </inlets>
+      <inlets/>
       <outlets>
-         <frac32buffer.bipolar name="wave" description="sine wave"/>
+         <frac32buffer.bipolar name="wave" description="goom wave"/>
       </outlets>
       <displays/>
       <params>
-         <frac32.s.map.pitch name="pitch" noLabel="true"/>
-         <frac32.u.map name="duty" description="duty cycle"/>
+         <int32 name="duty">
+            <MinValue i="0"/>
+            <MaxValue i="0"/>
+         </int32>
          <frac32.u.map name="slope"/>
       </params>
       <attribs/>
       <includes>
          <include>./goom.h</include>
       </includes>
-      <code.declaration><![CDATA[struct goom_data local_data;]]></code.declaration>
-      <code.init><![CDATA[goom_init(&local_data);]]></code.init>
-      <code.krate><![CDATA[goom_dsp(
-  &local_data,
-  inlet_pitch,
-  inlet_freq,
-  inlet_phase,
+      <code.declaration><![CDATA[struct goom_state state;]]></code.declaration>
+      <code.init><![CDATA[goom_init(&state);]]></code.init>
+      <code.krate><![CDATA[goom_wave(
+  &state,
   outlet_wave,
-  param_pitch,
   param_duty,
   param_slope
 );]]></code.krate>

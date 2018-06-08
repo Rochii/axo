@@ -13,25 +13,42 @@ Goom Wave Oscillator
 
 struct goom_state {
 	uint32_t phase;
+	int32_t duty;
 };
 
 //-----------------------------------------------------------------------------
 
 static inline void goom_init(struct goom_state *s) {
-	memset(s, 0, sizeof(staruct goom_state));
+	memset(s, 0, sizeof(struct goom_state));
 }
 
 //-----------------------------------------------------------------------------
 
-static inline void goom_wave(struct goom_state *s, const int32_t inlet_pitch, const int32buffer inlet_freq, const int32buffer inlet_phase, int32buffer & outlet_wave, int param_pitch, int param_duty, int param_slope) {
-	int32_t freq;
-	MTOFEXTENDED(param_pitch + inlet_pitch, freq);
-	for (int i = 0; i < BUFSIZE; i++) {
-		int32_t r;
-		s->phase += freq + inlet_freq[i];
-		int32_t p2 = s->phase + (inlet_phase[i] << 4);
-		SINE2TINTERP(p2, r) outlet_wave[i] = (r >> 4);
+static inline void goom_wave(struct goom_state *s,	// state
+			     int32_t * out,	// frac32buffer.bipolar q5.27 [-1,1]
+			     int32_t duty,	// duty cycle
+			     int32_t slope	// slope
+    ) {
+
+	if (duty != s->duty) {
+		LogTextMessage("duty: %08x", (uint32_t) duty);
+		s->duty = duty;
 	}
+
+	for (size_t i = 0; i < BUFSIZE; i++) {
+		out[i] = 0;
+	}
+
+	/*
+	   int32_t freq;
+	   MTOFEXTENDED(param_pitch + inlet_pitch, freq);
+	   for (int i = 0; i < BUFSIZE; i++) {
+	   int32_t r;
+	   s->phase += freq + inlet_freq[i];
+	   int32_t p2 = s->phase + (inlet_phase[i] << 4);
+	   SINE2TINTERP(p2, r) outlet_wave[i] = (r >> 4);
+	   }
+	 */
 }
 
 //-----------------------------------------------------------------------------
