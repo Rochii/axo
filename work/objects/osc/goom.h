@@ -12,7 +12,7 @@ Goom Wave Oscillator
 //-----------------------------------------------------------------------------
 
 struct goom_state {
-	uint32_t phase;
+	uint32_t phase;		// q12.20
 	int32_t duty;
 };
 
@@ -26,8 +26,8 @@ static inline void goom_init(struct goom_state *s) {
 
 static inline void goom_wave(struct goom_state *s,	// state
 			     int32_t * out,	// frac32buffer.bipolar q5.27 [-1,1]
-			     int32_t duty,	// duty cycle
-			     int32_t slope	// slope
+			     int32_t duty,	// duty cycle q11.21 [0..64]
+			     int32_t slope	// slope q11.21 [0..64]
     ) {
 
 	if (duty != s->duty) {
@@ -35,20 +35,14 @@ static inline void goom_wave(struct goom_state *s,	// state
 		s->duty = duty;
 	}
 
+	int32_t pitch = 16 << 21;
+	int32_t freq = mtof48k_ext_q31(pitch);
+
 	for (size_t i = 0; i < BUFSIZE; i++) {
-		out[i] = 0;
+		s->phase += freq;
+		out[i] = sin_q31(s->phase) >> 4;	// q1.31 -> q5.27
 	}
 
-	/*
-	   int32_t freq;
-	   MTOFEXTENDED(param_pitch + inlet_pitch, freq);
-	   for (int i = 0; i < BUFSIZE; i++) {
-	   int32_t r;
-	   s->phase += freq + inlet_freq[i];
-	   int32_t p2 = s->phase + (inlet_phase[i] << 4);
-	   SINE2TINTERP(p2, r) outlet_wave[i] = (r >> 4);
-	   }
-	 */
 }
 
 //-----------------------------------------------------------------------------

@@ -10,10 +10,7 @@ See: https://www.quinapalus.com/goom.html</sDescription>
       </outlets>
       <displays/>
       <params>
-         <int32 name="duty">
-            <MinValue i="0"/>
-            <MaxValue i="0"/>
-         </int32>
+         <frac32.u.map name="duty"/>
          <frac32.u.map name="slope"/>
       </params>
       <attribs/>
