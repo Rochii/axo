@@ -1,0 +1,39 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="mpr121" uuid="8a934ce6-bd31-4007-8dfe-b674aaa3b9c5">
+      <sDescription>MPR121 Capacitive Touch Sensor (I2C).
+https://www.adafruit.com/product/1982
+SCL=PB8, SDA=PB9</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets/>
+      <displays/>
+      <params/>
+      <attribs>
+         <combo name="I2CADDR">
+            <MenuEntries>
+               <string>0x5a</string>
+               <string>0x5b</string>
+               <string>0x5c</string>
+               <string>0x5d</string>
+            </MenuEntries>
+            <CEntries>
+               <string>0x5a</string>
+               <string>0x5b</string>
+               <string>0x5c</string>
+               <string>0x5d</string>
+            </CEntries>
+         </combo>
+      </attribs>
+      <includes>
+         <include>./mpr121.h</include>
+      </includes>
+      <depends>
+         <depend>I2CD1</depend>
+      </depends>
+      <code.declaration><![CDATA[struct mpr121_state state;]]></code.declaration>
+      <code.init><![CDATA[mpr121_init(&state, attr_I2CADDR);]]></code.init>
+      <code.dispose><![CDATA[mpr121_dispose(&state);]]></code.dispose>
+      <code.krate><![CDATA[mpr121_krate(&state);]]></code.krate>
+   </obj.normal>
+</objdefs>

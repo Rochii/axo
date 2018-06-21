@@ -8,6 +8,7 @@ import os
 src_dirs = (
   'work/objects/noise',
   'work/objects/osc',
+  'work/objects/touch',
 )
 
 src_filter_out = (
