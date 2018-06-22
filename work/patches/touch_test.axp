@@ -1,0 +1,43 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_1" x="336" y="42">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="touch/mpr121" uuid="8a934ce6-bd31-4007-8dfe-b674aaa3b9c5" name="mpr121_1" x="168" y="56">
+      <params/>
+      <attribs>
+         <combo attributeName="adr" selection="0x5a"/>
+      </attribs>
+   </obj>
+   <obj type="logic/getbit" uuid="6892e6e7-8112-4b59-a7ba-5b4fd002e8dc" name="getbit_1" x="308" y="182">
+      <params/>
+      <attribs>
+         <spinner attributeName="bit" value="0"/>
+      </attribs>
+   </obj>
+   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_2" x="476" y="210">
+      <params/>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="mpr121_1" outlet="touch"/>
+         <dest obj="i_1" inlet="in"/>
+         <dest obj="getbit_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="getbit_1" outlet="bit"/>
+         <dest obj="i_2" inlet="in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>300</x>
+      <y>15</y>
+      <width>1098</width>
+      <height>1006</height>
+   </windowPos>
+</patch-1.0>

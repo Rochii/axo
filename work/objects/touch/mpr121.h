@@ -2,9 +2,13 @@
 /*
 
 MPR121 Capacitive Touch Sensor (I2C).
-https://www.adafruit.com/product/1982
+Author: Jason Harris (https://github.com/deadsy)
 
-Pins:
+The touch output is the bit-wise status of the touch plates (bits 0..11)
+0 == not touched
+1 == touched
+
+Tested with: https://www.adafruit.com/product/1982
 Vin - voltage input 3.3v/5v (to axoloti)
 3Vo - voltage output (nc)
 GND - ground (to axoloti gnd)
@@ -64,8 +68,7 @@ struct mpr121_state {
 	stkalign_t thd_wa[THD_WA_SIZE(1024) / sizeof(stkalign_t)];	// thread working area
 	Thread *thd;		//thread
 	i2caddr_t adr;		// i2c device address
-	uint32_t touch;		// touch status
-	uint32_t old_touch;	// old touch status
+	int32_t touch;		// touch status
 };
 
 //-----------------------------------------------------------------------------
@@ -139,14 +142,16 @@ static void mpr121_thread_loop(void) {
 
 static msg_t mpr121_thread(void *arg) {
 	struct mpr121_state *s = (struct mpr121_state *)arg;
-	while (!chThdShouldTerminate()) {
+	LogTextMessage("starting mpr121_thread(0x%08x)", s);
 
+	while (!chThdShouldTerminate()) {
 		chSysLock();
 		s->touch += 1;
 		chSysUnlock();
-
 		chThdSleepMilliseconds(500);
 	}
+
+	LogTextMessage("stopping mpr121_thread");
 	chThdExit((msg_t) 0);
 }
 
@@ -166,7 +171,7 @@ static void mpr121_init(struct mpr121_state *s, i2caddr_t adr) {
 		FAST_DUTY_CYCLE_2,
 	};
 	i2cStart(&I2CD1, &i2cfg);
-	// create thread
+	// create the mpr121 polling thread
 	s->thd = chThdCreateStatic(s->thd_wa, sizeof(s->thd_wa), NORMALPRIO, mpr121_thread, (void *)s);
 }
 
@@ -181,16 +186,11 @@ static void mpr121_dispose(struct mpr121_state *s) {
 	palSetPadMode(GPIOB, 9, PAL_MODE_INPUT_ANALOG);
 }
 
-static void mpr121_krate(struct mpr121_state *s) {
+static void mpr121_krate(struct mpr121_state *s, int32_t * touch) {
 	// get the current touch status
 	chSysLock();
-	uint32_t touch = s->touch;
+	*touch = s->touch;
 	chSysUnlock();
-
-	if (touch != s->old_touch) {
-		LogTextMessage("touch %d", touch);
-		s->old_touch = touch;
-	}
 }
 
 //-----------------------------------------------------------------------------
