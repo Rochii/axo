@@ -61,23 +61,27 @@ IRQ - interrupt request (nc - we poll it)
 //-----------------------------------------------------------------------------
 
 struct mpr121_state {
-	i2caddr_t adr;
+	stkalign_t thd_wa[THD_WA_SIZE(1024) / sizeof(stkalign_t)];	// thread working area
+	Thread *thd;		//thread
+	i2caddr_t adr;		// i2c device address
+	uint32_t touch;		// touch status
+	uint32_t old_touch;	// old touch status
 };
 
 //-----------------------------------------------------------------------------
 
-static inline uint8_t mpr121_rd8(struct mpr121_state *s, uint8_t reg) {
+static uint8_t mpr121_rd8(struct mpr121_state *s, uint8_t reg) {
 	return 0;
 }
 
-static inline uint16_t mpr121_rd16(struct mpr121_state *s, uint8_t reg) {
+static uint16_t mpr121_rd16(struct mpr121_state *s, uint8_t reg) {
 	return 0;
 }
 
-static inline void mpr121_wr8(struct mpr121_state *s, uint8_t reg, uint8_t val) {
+static void mpr121_wr8(struct mpr121_state *s, uint8_t reg, uint8_t val) {
 }
 
-static inline void mpr121_set_threshold(struct mpr121_state *s, uint8_t touch, uint8_t release) {
+static void mpr121_set_threshold(struct mpr121_state *s, uint8_t touch, uint8_t release) {
 	for (int i = 0; i < 12; i++) {
 		mpr121_wr8(s, MPR121_TOUCHTH_0 + (2 * i), touch);
 		mpr121_wr8(s, MPR121_RELEASETH_0 + (2 * i), release);
@@ -134,24 +138,27 @@ static void mpr121_thread_loop(void) {
 }
 
 static msg_t mpr121_thread(void *arg) {
-	mpr121_thread_init(0 /*TODO*/);
+	struct mpr121_state *s = (struct mpr121_state *)arg;
 	while (!chThdShouldTerminate()) {
-		mpr121_thread_loop();
-		chThdSleepMilliseconds(1);
+
+		chSysLock();
+		s->touch += 1;
+		chSysUnlock();
+
+		chThdSleepMilliseconds(500);
 	}
 	chThdExit((msg_t) 0);
 }
 
 //-----------------------------------------------------------------------------
 
-static inline void mpr121_init(struct mpr121_state *s, i2caddr_t adr) {
+static void mpr121_init(struct mpr121_state *s, i2caddr_t adr) {
 	// initialise the state
 	memset(s, 0, sizeof(struct mpr121_state));
 	s->adr = adr;
 	// initialise the pins
 	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_PUDR_PULLUP | PAL_STM32_OTYPE_OPENDRAIN);	// SCL
 	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4) | PAL_STM32_PUDR_PULLUP | PAL_STM32_OTYPE_OPENDRAIN);	// SDA
-
 	// start i2c
 	I2CConfig i2cfg = {
 		OPMODE_I2C,
@@ -159,26 +166,31 @@ static inline void mpr121_init(struct mpr121_state *s, i2caddr_t adr) {
 		FAST_DUTY_CYCLE_2,
 	};
 	i2cStart(&I2CD1, &i2cfg);
-
-	// TODO create thread
-
+	// create thread
+	s->thd = chThdCreateStatic(s->thd_wa, sizeof(s->thd_wa), NORMALPRIO, mpr121_thread, (void *)s);
 }
 
-static inline void mpr121_dispose(struct mpr121_state *s) {
-
-	// TODO terminate thread
-
+static void mpr121_dispose(struct mpr121_state *s) {
+	// stop thread
+	chThdTerminate(s->thd);
+	chThdWait(s->thd);
 	// stop i2c
 	i2cStop(&I2CD1);
-
 	/// restore the pins
 	palSetPadMode(GPIOB, 8, PAL_MODE_INPUT_ANALOG);
 	palSetPadMode(GPIOB, 9, PAL_MODE_INPUT_ANALOG);
 }
 
-//-----------------------------------------------------------------------------
+static void mpr121_krate(struct mpr121_state *s) {
+	// get the current touch status
+	chSysLock();
+	uint32_t touch = s->touch;
+	chSysUnlock();
 
-static inline void mpr121_krate(struct mpr121_state *s) {
+	if (touch != s->old_touch) {
+		LogTextMessage("touch %d", touch);
+		s->old_touch = touch;
+	}
 }
 
 //-----------------------------------------------------------------------------
