@@ -31,43 +31,59 @@ IRQ - interrupt request (nc - we poll it)
 //-----------------------------------------------------------------------------
 
 // registers
-#define MPR121_TSTATUS_L    0x00
-#define MPR121_TSTATUS_H    0x01
-#define MPR121_FDATA_L(x)   (0x04 + (2 * (x)))
-#define MPR121_FDATA_H(x)   (0x05 + (2 * (x)))
-#define MPR121_BASELINE(x)  (0x1E + (x))
-#define MPR121_MHDR         0x2B
-#define MPR121_NHDR         0x2C
-#define MPR121_NCLR         0x2D
-#define MPR121_FDLR         0x2E
-#define MPR121_MHDF         0x2F
-#define MPR121_NHDF         0x30
-#define MPR121_NCLF         0x31
-#define MPR121_FDLF         0x32
-#define MPR121_NHDT         0x33
-#define MPR121_NCLT         0x34
-#define MPR121_FDLT         0x35
-#define MPR121_TTH(x)       (0x41 + (2 * (x)))
-#define MPR121_RTH(x)       (0x42 + (2 * (x)))
-#define MPR121_DEBOUNCE     0x5B
-#define MPR121_CONFIG1      0x5C
-#define MPR121_CONFIG2      0x5D
-#define MPR121_ECR          0x5E
-#define MPR121_CDC(x)       (0x5F + (x))
-#define MPR121_CDT          0x6C
-#define MPR121_GPIODIR      0x76
-#define MPR121_GPIOEN       0x77
-#define MPR121_GPIOSET      0x78
-#define MPR121_GPIOCLR      0x79
-#define MPR121_GPIOTOGGLE   0x7A
-#define MPR121_AUTOCONFIG0  0x7B
-#define MPR121_AUTOCONFIG1  0x7C
-#define MPR121_UPLIMIT      0x7D
-#define MPR121_LOWLIMIT     0x7E
-#define MPR121_TARGETLIMIT  0x7F
-#define MPR121_SOFTRESET    0x80
+#define MPR121_TOUCH_STATUS_L       0x00
+#define MPR121_TOUCH_STATUS_H       0x01
+#define MPR121_OOR_STATUS_L         0x02
+#define MPR121_OOR_STATUS_H         0x03
+#define MPR121_FILTERED_DATA_L(x)   (0x04 + (2 * (x)))
+#define MPR121_FILTERED_DATA_H(x)   (0x05 + (2 * (x)))
+#define MPR121_BASELINE_VALUE(x)    (0x1e + (x))
+#define MPR121_MHD_RISING           0x2b
+#define MPR121_NHD_RISING           0x2c
+#define MPR121_NCL_RISING           0x2d
+#define MPR121_FDL_RISING           0x2e
+#define MPR121_MHD_FALLING          0x2f
+#define MPR121_NHD_FALLING          0x30
+#define MPR121_NCL_FALLING          0x31
+#define MPR121_FDL_FALLING          0x32
+#define MPR121_NHD_TOUCHED          0x33
+#define MPR121_NCL_TOUCHED          0x34
+#define MPR121_FDL_TOUCHED          0x35
+#define MPR121_PROX_MHD_RISING      0x36
+#define MPR121_PROX_NHD_RISING      0x37
+#define MPR121_PROX_NCL_RISING      0x38
+#define MPR121_PROX_FDL_RISING      0x39
+#define MPR121_PROX_MHD_FALLING     0x3a
+#define MPR121_PROX_NHD_FALLING     0x3b
+#define MPR121_PROX_NCL_FALLING     0x3c
+#define MPR121_PROX_FDL_FALLING     0x3d
+#define MPR121_PROX_NHD_TOUCHED     0x3e
+#define MPR121_PROX_NCL_TOUCHED     0x3f
+#define MPR121_PROX_FDL_TOUCHED     0x40
+#define MPR121_TOUCH_THRESHOLD(x)   (0x41 + (2 * (x)))
+#define MPR121_RELEASE_THRESHOLD(x) (0x42 + (2 * (x)))
+#define MPR121_DEBOUNCE             0x5b
+#define MPR121_CDC_CONFIG           0x5c
+#define MPR121_CDT_CONFIG           0x5d
+#define MPR121_ELECTRODE_CONFIG     0x5e
+#define MPR121_CDC(x)               (0x5f + (x))
+#define MPR121_CDT                  0x6c
+#define MPR121_GPIO_CTRL0           0x73
+#define MPR121_GPIO_CTRL1           0x74
+#define MPR121_GPIO_DATA            0x75
+#define MPR121_GPIO_DIR             0x76
+#define MPR121_GPIO_ENABLE          0x77
+#define MPR121_GPIO_SET             0x78
+#define MPR121_GPIO_CLR             0x79
+#define MPR121_GPIO_TOGGLE          0x7a
+#define MPR121_AUTOCONFIG_CTRL0     0x7b
+#define MPR121_AUTOCONFIG_CTRL1     0x7c
+#define MPR121_AUTOCONFIG_USL       0x7d
+#define MPR121_AUTOCONFIG_LSL       0x7e
+#define MPR121_AUTOCONFIG_TL        0x7f
+#define MPR121_SOFTRESET            0x80
 
-#define I2C_TIMEOUT 30		// chibios ticks
+#define MPR121_I2C_TIMEOUT 30	// chibios ticks
 
 //-----------------------------------------------------------------------------
 
@@ -79,7 +95,7 @@ struct mpr121_cfg {
 
 // mpr121 state variables
 struct mpr121_state {
-	stkalign_t thd_wa[THD_WA_SIZE(1024) / sizeof(stkalign_t)];	// thread working area
+	stkalign_t thd_wa[THD_WA_SIZE(512) / sizeof(stkalign_t)];	// thread working area
 	Thread *thd;		// thread pointer
 	const struct mpr121_cfg *cfg;	// register configuration
 	I2CDriver *dev;		// i2c bus driver
@@ -114,7 +130,7 @@ static void *mpr121_malloc(size_t size) {
 // read an 8 bit value from a register
 static int mpr121_rd8(struct mpr121_state *s, uint8_t reg, uint8_t * val) {
 	s->tx[0] = reg;
-	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 1, I2C_TIMEOUT);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 1, MPR121_I2C_TIMEOUT);
 	*val = *(uint8_t *) s->rx;
 	return (rc == RDY_OK) ? 0 : -1;
 }
@@ -122,7 +138,7 @@ static int mpr121_rd8(struct mpr121_state *s, uint8_t reg, uint8_t * val) {
 // read a 16 bit value from a register
 static int mpr121_rd16(struct mpr121_state *s, uint8_t reg, uint16_t * val) {
 	s->tx[0] = reg;
-	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 2, I2C_TIMEOUT);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 2, MPR121_I2C_TIMEOUT);
 	*val = *(uint16_t *) s->rx;
 	return (rc == RDY_OK) ? 0 : -1;
 }
@@ -131,7 +147,7 @@ static int mpr121_rd16(struct mpr121_state *s, uint8_t reg, uint16_t * val) {
 static int mpr121_wr8(struct mpr121_state *s, uint8_t reg, uint8_t val) {
 	s->tx[0] = reg;
 	s->tx[1] = val;
-	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 2, NULL, 0, I2C_TIMEOUT);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 2, NULL, 0, MPR121_I2C_TIMEOUT);
 	return (rc == RDY_OK) ? 0 : -1;
 }
 
@@ -173,8 +189,8 @@ static msg_t mpr121_thread(void *arg) {
 
 	// check the expected default values for the config registers
 	uint8_t cfg1, cfg2;
-	mpr121_rd8(s, MPR121_CONFIG1, &cfg1);
-	mpr121_rd8(s, MPR121_CONFIG2, &cfg2);
+	mpr121_rd8(s, MPR121_CDC_CONFIG, &cfg1);
+	mpr121_rd8(s, MPR121_CDT_CONFIG, &cfg2);
 	if (cfg1 != 0x10 || cfg2 != 0x24) {
 		mpr121_error(s, "bad register values");
 		goto exit;
@@ -189,7 +205,7 @@ static msg_t mpr121_thread(void *arg) {
 	while (!chThdShouldTerminate()) {
 		uint16_t val;
 		// read the touch status
-		mpr121_rd16(s, MPR121_TSTATUS_L, &val);
+		mpr121_rd16(s, MPR121_TOUCH_STATUS_L, &val);
 		val &= 0xfff;
 		chSysLock();
 		s->touch = val;

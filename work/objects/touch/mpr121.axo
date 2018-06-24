@@ -44,41 +44,41 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
 // See: https://www.nxp.com/docs/en/data-sheet/MPR121.pdf
 
 const struct mpr121_cfg config[34] = {
-  {MPR121_TTH(0), 6}, // touch thresholds
-  {MPR121_TTH(1), 6},
-  {MPR121_TTH(2), 6},
-  {MPR121_TTH(3), 6},
-  {MPR121_TTH(4), 6},
-  {MPR121_TTH(5), 6},
-  {MPR121_TTH(6), 6},
-  {MPR121_TTH(7), 6},
-  {MPR121_TTH(8), 6},
-  {MPR121_TTH(9), 6},
-  {MPR121_TTH(10), 6},
-  {MPR121_TTH(11), 6},
+  {MPR121_TOUCH_THRESHOLD(0), 6},
+  {MPR121_TOUCH_THRESHOLD(1), 6},
+  {MPR121_TOUCH_THRESHOLD(2), 6},
+  {MPR121_TOUCH_THRESHOLD(3), 6},
+  {MPR121_TOUCH_THRESHOLD(4), 6},
+  {MPR121_TOUCH_THRESHOLD(5), 6},
+  {MPR121_TOUCH_THRESHOLD(6), 6},
+  {MPR121_TOUCH_THRESHOLD(7), 6},
+  {MPR121_TOUCH_THRESHOLD(8), 6},
+  {MPR121_TOUCH_THRESHOLD(9), 6},
+  {MPR121_TOUCH_THRESHOLD(10), 6},
+  {MPR121_TOUCH_THRESHOLD(11), 6},
 
-  {MPR121_RTH(0), 12}, // release thresholds
-  {MPR121_RTH(1), 12},
-  {MPR121_RTH(2), 12},
-  {MPR121_RTH(3), 12},
-  {MPR121_RTH(4), 12},
-  {MPR121_RTH(5), 12},
-  {MPR121_RTH(6), 12},
-  {MPR121_RTH(7), 12},
-  {MPR121_RTH(8), 12},
-  {MPR121_RTH(9), 12},
-  {MPR121_RTH(10), 12},
-  {MPR121_RTH(11), 12},
+  {MPR121_RELEASE_THRESHOLD(0), 12},
+  {MPR121_RELEASE_THRESHOLD(1), 12},
+  {MPR121_RELEASE_THRESHOLD(2), 12},
+  {MPR121_RELEASE_THRESHOLD(3), 12},
+  {MPR121_RELEASE_THRESHOLD(4), 12},
+  {MPR121_RELEASE_THRESHOLD(5), 12},
+  {MPR121_RELEASE_THRESHOLD(6), 12},
+  {MPR121_RELEASE_THRESHOLD(7), 12},
+  {MPR121_RELEASE_THRESHOLD(8), 12},
+  {MPR121_RELEASE_THRESHOLD(9), 12},
+  {MPR121_RELEASE_THRESHOLD(10), 12},
+  {MPR121_RELEASE_THRESHOLD(11), 12},
 
-  {MPR121_MHDR, 0x01},
-  {MPR121_NHDR, 0x01},
-  {MPR121_NCLR, 0x0E},
-  {MPR121_MHDF, 0x01},
-  {MPR121_NHDF, 0x05},
-  {MPR121_NCLF, 0x01},
-  {MPR121_CONFIG1, 0x10}, // default, 16uA charge current
-  {MPR121_CONFIG2, 0x20}, // 0.5uS encoding, 1ms period
-  {MPR121_ECR, 0x8F}, // start with first 5 bits of baseline tracking
+  {MPR121_MHD_RISING, 0x01},
+  {MPR121_NHD_RISING, 0x01},
+  {MPR121_NCL_RISING, 0x0E},
+  {MPR121_MHD_FALLING, 0x01},
+  {MPR121_NHD_FALLING, 0x05},
+  {MPR121_NCL_FALLING, 0x01},
+  {MPR121_CDC_CONFIG, 0x10}, // default, 16uA charge current
+  {MPR121_CDT_CONFIG, 0x20}, // 0.5uS encoding, 1ms period
+  {MPR121_ELECTRODE_CONFIG, 0x8F}, // start with first 5 bits of baseline tracking
   {0xff, 0} // end-of-list
 };
 
