@@ -71,13 +71,19 @@ IRQ - interrupt request (nc - we poll it)
 
 //-----------------------------------------------------------------------------
 
+// mpr121 configuration
+struct mpr121_cfg {
+	uint8_t reg;
+	uint8_t val;
+};
+
+// mpr121 state variables
 struct mpr121_state {
 	stkalign_t thd_wa[THD_WA_SIZE(1024) / sizeof(stkalign_t)];	// thread working area
 	Thread *thd;		// thread pointer
+	const struct mpr121_cfg *cfg;	// register configuration
 	I2CDriver *dev;		// i2c bus driver
 	i2caddr_t adr;		// i2c device address
-	uint8_t tth;		// touch threshold
-	uint8_t rth;		// release threshold
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
 	int32_t touch;		// touch status (shared across dsp/mpr121 thread)
@@ -146,6 +152,7 @@ static void mpr121_error(struct mpr121_state *s, const char *msg) {
 static msg_t mpr121_thread(void *arg) {
 	struct mpr121_state *s = (struct mpr121_state *)arg;
 	int rc = 0;
+	int idx = 0;
 
 	//mpr121_info(s, "starting thread");
 
@@ -172,21 +179,13 @@ static msg_t mpr121_thread(void *arg) {
 		mpr121_error(s, "bad register values");
 		goto exit;
 	}
-	// set touch/release thresholds
-	for (int i = 0; i < 12; i++) {
-		mpr121_wr8(s, MPR121_TTH(i), s->tth);
-		mpr121_wr8(s, MPR121_RTH(i), s->rth);
+	// apply the per-object register configuration
+	while (s->cfg[idx].reg != 0xff) {
+		mpr121_wr8(s, s->cfg[idx].reg, s->cfg[idx].val);
+		idx += 1;
 	}
-	mpr121_wr8(s, MPR121_MHDR, 0x01);
-	mpr121_wr8(s, MPR121_NHDR, 0x01);
-	mpr121_wr8(s, MPR121_NCLR, 0x0E);
-	mpr121_wr8(s, MPR121_MHDF, 0x01);
-	mpr121_wr8(s, MPR121_NHDF, 0x05);
-	mpr121_wr8(s, MPR121_NCLF, 0x01);
-	mpr121_wr8(s, MPR121_CONFIG1, 0x10);	// default, 16uA charge current
-	mpr121_wr8(s, MPR121_CONFIG2, 0x20);	// 0.5uS encoding, 1ms period
-	mpr121_wr8(s, MPR121_ECR, 0x8F);	// start with first 5 bits of baseline tracking
 
+	// poll for the changing touch status
 	while (!chThdShouldTerminate()) {
 		uint16_t val;
 		// read the touch status
@@ -205,13 +204,12 @@ static msg_t mpr121_thread(void *arg) {
 
 //-----------------------------------------------------------------------------
 
-static void mpr121_init(struct mpr121_state *s, i2caddr_t adr) {
+static void mpr121_init(struct mpr121_state *s, const struct mpr121_cfg *cfg, i2caddr_t adr) {
 	// initialise the state
 	memset(s, 0, sizeof(struct mpr121_state));
+	s->cfg = cfg;
 	s->dev = &I2CD1;
 	s->adr = adr;
-	s->tth = 12;		// touch threshold
-	s->rth = 6;		// release threshold
 	// create the polling thread
 	s->thd = chThdCreateStatic(s->thd_wa, sizeof(s->thd_wa), NORMALPRIO, mpr121_thread, (void *)s);
 }
