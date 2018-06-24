@@ -9,6 +9,7 @@ src_dirs = (
   'work/objects/noise',
   'work/objects/osc',
   'work/objects/touch',
+  'work/objects/logic',
 )
 
 src_filter_out = (
