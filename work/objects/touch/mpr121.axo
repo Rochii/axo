@@ -2,10 +2,14 @@
    <obj.normal id="mpr121" uuid="8a934ce6-bd31-4007-8dfe-b674aaa3b9c5">
       <sDescription>MPR121 Capacitive Touch Sensor (I2C).
 Tested with: https://www.adafruit.com/product/1982
-I2C Bus: SCL=PB8, SDA=PB9
 The touch output is the bit-wise status of the touch plates (bits 0..11)
 0 == not touched
-1 == touched</sDescription>
+1 == touched
+
+Note:
+This object requires a single instance of the factory/gpio/i2c/config object.
+This allows multiple mpr121 devices (each with a unique i2c address) to work concurrently.
+I2C Bus: I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
       <inlets/>
