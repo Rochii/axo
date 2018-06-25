@@ -64,7 +64,7 @@ static void debounce_krate1(struct debounce_state *s,	//
 			    bool * o0	//
     ) {
 	s->count += 1;
-	if (s->count & s->divider == 0) {
+	if ((s->count & s->divider) == 0) {
 		uint32_t input = 0;
 		input |= ((i0 != 0) << 0);
 		debounce(s, input);
@@ -82,7 +82,7 @@ static void debounce_krate2(struct debounce_state *s,	//
 			    bool * o0, bool * o1	//
     ) {
 	s->count += 1;
-	if (s->count & s->divider == 0) {
+	if ((s->count & s->divider) == 0) {
 		uint32_t input = 0;
 		input |= ((i0 != 0) << 0);
 		input |= ((i1 != 0) << 1);
@@ -102,7 +102,7 @@ static void debounce_krate4(struct debounce_state *s,	//
 			    bool * o0, bool * o1, bool * o2, bool * o3	//
     ) {
 	s->count += 1;
-	if (s->count & s->divider == 0) {
+	if ((s->count & s->divider) == 0) {
 		uint32_t input = 0;
 		input |= ((i0 != 0) << 0);
 		input |= ((i1 != 0) << 1);
@@ -128,7 +128,7 @@ static void debounce_krate8(struct debounce_state *s,	//
 			    bool * o4, bool * o5, bool * o6, bool * o7	//
     ) {
 	s->count += 1;
-	if (s->count & s->divider == 0) {
+	if ((s->count & s->divider) == 0) {
 		uint32_t input = 0;
 		input |= ((i0 != 0) << 0);
 		input |= ((i1 != 0) << 1);
@@ -166,7 +166,7 @@ static void debounce_krate16(struct debounce_state *s,	//
 			     bool * o12, bool * o13, bool * o14, bool * o15	//
     ) {
 	s->count += 1;
-	if (s->count & s->divider == 0) {
+	if ((s->count & s->divider) == 0) {
 		uint32_t input = 0;
 		input |= ((i0 != 0) << 0);
 		input |= ((i1 != 0) << 1);
