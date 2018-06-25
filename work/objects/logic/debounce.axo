@@ -2,8 +2,8 @@
 <objdefs appVersion="1.0.12">
   <obj.normal id="debounce16" uuid="ee6ebfa6-e4bf-4d93-badf-8cef34f74d48">
     <sDescription>Debounce 16 bool32 inputs.
-rate: Increase the rate attribute until you get clean output pulses.
-mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
+period: Increase the period until you get suitable debounce response.
+mode: Transition from 0 to 1 fast OR from 1 to 0 fast.</sDescription>
     <author>Jason Harris</author>
     <license>BSD</license>
     <inlets>
@@ -45,11 +45,11 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
     <displays/>
     <params/>
     <attribs>
-      <spinner name="rate" MinValue="1" MaxValue="7" DefaultValue="3"/>
+      <spinner name="period" MinValue="0" MaxValue="7" DefaultValue="3"/>
       <combo name="mode">
         <MenuEntries>
-          <string>fast ones</string>
-          <string>fast zeroes</string>
+          <string>fast 0 to 1</string>
+          <string>fast 1 to 0</string>
         </MenuEntries>
         <CEntries>
           <string>1</string>
@@ -61,7 +61,7 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
       <include>./debounce.h</include>
     </includes>
     <code.declaration><![CDATA[struct debounce_state state;]]></code.declaration>
-    <code.init><![CDATA[debounce_init(&state, attr_rate, attr_mode);]]></code.init>
+    <code.init><![CDATA[debounce_init(&state, attr_period, attr_mode);]]></code.init>
     <code.krate><![CDATA[debounce_krate16(
 	&state,
 	inlet_i0,
@@ -100,8 +100,8 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
   </obj.normal>
   <obj.normal id="debounce8" uuid="0f8bb0b2-5a9c-4807-afb7-b15f3ba7e1a1">
     <sDescription>Debounce 8 bool32 inputs.
-rate: Increase the rate attribute until you get clean output pulses.
-mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
+period: Increase the period until you get suitable debounce response.
+mode: Transition from 0 to 1 fast OR from 1 to 0 fast.</sDescription>
     <author>Jason Harris</author>
     <license>BSD</license>
     <inlets>
@@ -127,11 +127,11 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
     <displays/>
     <params/>
     <attribs>
-      <spinner name="rate" MinValue="1" MaxValue="7" DefaultValue="3"/>
+      <spinner name="period" MinValue="0" MaxValue="7" DefaultValue="3"/>
       <combo name="mode">
         <MenuEntries>
-          <string>fast ones</string>
-          <string>fast zeroes</string>
+          <string>fast 0 to 1</string>
+          <string>fast 1 to 0</string>
         </MenuEntries>
         <CEntries>
           <string>1</string>
@@ -143,7 +143,7 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
       <include>./debounce.h</include>
     </includes>
     <code.declaration><![CDATA[struct debounce_state state;]]></code.declaration>
-    <code.init><![CDATA[debounce_init(&state, attr_rate, attr_mode);]]></code.init>
+    <code.init><![CDATA[debounce_init(&state, attr_period, attr_mode);]]></code.init>
     <code.krate><![CDATA[debounce_krate8(
 	&state,
 	inlet_i0,
@@ -166,8 +166,8 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
   </obj.normal>
   <obj.normal id="debounce4" uuid="8f7dca70-2667-4c57-88d0-7b5c0db3b589">
     <sDescription>Debounce 4 bool32 inputs.
-rate: Increase the rate attribute until you get clean output pulses.
-mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
+period: Increase the period until you get suitable debounce response.
+mode: Transition from 0 to 1 fast OR from 1 to 0 fast.</sDescription>
     <author>Jason Harris</author>
     <license>BSD</license>
     <inlets>
@@ -185,11 +185,11 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
     <displays/>
     <params/>
     <attribs>
-      <spinner name="rate" MinValue="1" MaxValue="7" DefaultValue="3"/>
+      <spinner name="period" MinValue="0" MaxValue="7" DefaultValue="3"/>
       <combo name="mode">
         <MenuEntries>
-          <string>fast ones</string>
-          <string>fast zeroes</string>
+          <string>fast 0 to 1</string>
+          <string>fast 1 to 0</string>
         </MenuEntries>
         <CEntries>
           <string>1</string>
@@ -201,7 +201,7 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
       <include>./debounce.h</include>
     </includes>
     <code.declaration><![CDATA[struct debounce_state state;]]></code.declaration>
-    <code.init><![CDATA[debounce_init(&state, attr_rate, attr_mode);]]></code.init>
+    <code.init><![CDATA[debounce_init(&state, attr_period, attr_mode);]]></code.init>
     <code.krate><![CDATA[debounce_krate4(
 	&state,
 	inlet_i0,
@@ -216,8 +216,8 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
   </obj.normal>
   <obj.normal id="debounce2" uuid="daa73e25-b954-48ca-be31-a3b4b9cb09d8">
     <sDescription>Debounce 2 bool32 inputs.
-rate: Increase the rate attribute until you get clean output pulses.
-mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
+period: Increase the period until you get suitable debounce response.
+mode: Transition from 0 to 1 fast OR from 1 to 0 fast.</sDescription>
     <author>Jason Harris</author>
     <license>BSD</license>
     <inlets>
@@ -231,11 +231,11 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
     <displays/>
     <params/>
     <attribs>
-      <spinner name="rate" MinValue="1" MaxValue="7" DefaultValue="3"/>
+      <spinner name="period" MinValue="0" MaxValue="7" DefaultValue="3"/>
       <combo name="mode">
         <MenuEntries>
-          <string>fast ones</string>
-          <string>fast zeroes</string>
+          <string>fast 0 to 1</string>
+          <string>fast 1 to 0</string>
         </MenuEntries>
         <CEntries>
           <string>1</string>
@@ -247,7 +247,7 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
       <include>./debounce.h</include>
     </includes>
     <code.declaration><![CDATA[struct debounce_state state;]]></code.declaration>
-    <code.init><![CDATA[debounce_init(&state, attr_rate, attr_mode);]]></code.init>
+    <code.init><![CDATA[debounce_init(&state, attr_period, attr_mode);]]></code.init>
     <code.krate><![CDATA[debounce_krate2(
 	&state,
 	inlet_i0,
@@ -258,8 +258,8 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
   </obj.normal>
   <obj.normal id="debounce1" uuid="dd7c32f9-81e3-4570-bea6-1e87c04029ed">
     <sDescription>Debounce 1 bool32 input.
-rate: Increase the rate attribute until you get clean output pulses.
-mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
+period: Increase the period until you get suitable debounce response.
+mode: Transition from 0 to 1 fast OR from 1 to 0 fast.</sDescription>
     <author>Jason Harris</author>
     <license>BSD</license>
     <inlets>
@@ -271,11 +271,11 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
     <displays/>
     <params/>
     <attribs>
-      <spinner name="rate" MinValue="1" MaxValue="7" DefaultValue="3"/>
+      <spinner name="period" MinValue="0" MaxValue="7" DefaultValue="3"/>
       <combo name="mode">
         <MenuEntries>
-          <string>fast ones</string>
-          <string>fast zeroes</string>
+          <string>fast 0 to 1</string>
+          <string>fast 1 to 0</string>
         </MenuEntries>
         <CEntries>
           <string>1</string>
@@ -287,7 +287,7 @@ mode: Transition to 1's fast (0's slow) OR 0's fast (1's slow).</sDescription>
       <include>./debounce.h</include>
     </includes>
     <code.declaration><![CDATA[struct debounce_state state;]]></code.declaration>
-    <code.init><![CDATA[debounce_init(&state, attr_rate, attr_mode);]]></code.init>
+    <code.init><![CDATA[debounce_init(&state, attr_period, attr_mode);]]></code.init>
     <code.krate><![CDATA[debounce_krate1(&state,	inlet_i0,	&outlet_o0);]]></code.krate>
   </obj.normal>
 </objdefs>

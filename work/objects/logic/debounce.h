@@ -3,6 +3,10 @@
 
 Debounce bool32 inputs
 
+The code periodically samples the krate input values and stores them in a
+circular buffer of DEBOUNCE_COUNT entries. The output is formed by OR-ing
+or AND-ing all buffer entries.
+
 */
 //-----------------------------------------------------------------------------
 
@@ -11,34 +15,35 @@ Debounce bool32 inputs
 
 //-----------------------------------------------------------------------------
 
-#define DEBOUNCE_COUNT 8
+#define DEBOUNCE_COUNT 4
 
 // debounce state variables
 struct debounce_state {
-	uint32_t sample[DEBOUNCE_COUNT];	// circular buffer for n input samples
+	uint32_t sample[DEBOUNCE_COUNT];	// circular buffer for input samples
 	int idx;		// buffer index
 	uint32_t count;		// sample count
-	uint32_t output;	// current output
 	uint32_t divider;	// sample count divider
 	int mode;		// 1/0 transition speed
+	uint32_t output;	// current output
 };
 
 //-----------------------------------------------------------------------------
 
 static void debounce(struct debounce_state *s, uint32_t input) {
+	uint32_t state;
+
 	// store the current input
 	s->sample[s->idx] = input;
 	s->idx = (s->idx == DEBOUNCE_COUNT - 1) ? 0 : s->idx + 1;
 
-	uint32_t state;
-	if (s->mode != 0) {
-		// fast 1s: a single 1 will make us go high (OR)
+	if (s->mode) {
+		// fast 0 to 1: a single 1 will make us go high (OR)
 		state = 0;
 		for (int i = 0; i < DEBOUNCE_COUNT; i++) {
 			state |= s->sample[i];
 		}
 	} else {
-		// fast 0s: a single 0 will make us go low (AND)
+		// fast 1 to 0: a single 0 will make us go low (AND)
 		state = 0xffffffff;
 		for (int i = 0; i < DEBOUNCE_COUNT; i++) {
 			state &= s->sample[i];
@@ -49,10 +54,10 @@ static void debounce(struct debounce_state *s, uint32_t input) {
 
 //-----------------------------------------------------------------------------
 
-static void debounce_init(struct debounce_state *s, int attr_rate, int attr_mode) {
+static void debounce_init(struct debounce_state *s, int attr_period, int attr_mode) {
 	// initialise the state
 	memset(s, 0, sizeof(struct debounce_state));
-	s->divider = (1 << attr_rate) - 1;
+	s->divider = (1 << attr_period) - 1;
 	s->mode = attr_mode;
 }
 

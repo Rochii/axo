@@ -8,8 +8,8 @@
    <obj type="logic/debounce1" uuid="dd7c32f9-81e3-4570-bea6-1e87c04029ed" name="debounce1_1" x="154" y="42">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/counter" uuid="7a141ba82230e54e5f5cd12da5dbe5a74ba854a5" name="counter_1" x="266" y="42">
@@ -42,8 +42,8 @@
    <obj type="logic/debounce1" uuid="dd7c32f9-81e3-4570-bea6-1e87c04029ed" name="debounce1_2" x="140" y="252">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/counter" uuid="7a141ba82230e54e5f5cd12da5dbe5a74ba854a5" name="counter_3" x="252" y="252">
@@ -66,39 +66,39 @@
       <params/>
       <attribs/>
    </obj>
-   <obj type="logic/debounce16" uuid="ee6ebfa6-e4bf-4d93-badf-8cef34f74d48" name="debounce16_2" x="14" y="462">
+   <obj type="logic/debounce16" uuid="ee6ebfa6-e4bf-4d93-badf-8cef34f74d48" name="debounce16_1" x="14" y="462">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/debounce8" uuid="0f8bb0b2-5a9c-4807-afb7-b15f3ba7e1a1" name="debounce8_1" x="140" y="462">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/debounce4" uuid="8f7dca70-2667-4c57-88d0-7b5c0db3b589" name="debounce4_1" x="252" y="462">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/debounce2" uuid="daa73e25-b954-48ca-be31-a3b4b9cb09d8" name="debounce2_1" x="364" y="462">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <obj type="logic/debounce1" uuid="dd7c32f9-81e3-4570-bea6-1e87c04029ed" name="debounce1_3" x="476" y="462">
       <params/>
       <attribs>
-         <spinner attributeName="rate" value="3"/>
-         <combo attributeName="mode" selection="fast ones"/>
+         <spinner attributeName="period" value="3"/>
+         <combo attributeName="mode" selection="fast 0 to 1"/>
       </attribs>
    </obj>
    <nets>
@@ -142,8 +142,8 @@
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>353</x>
-      <y>108</y>
+      <x>385</x>
+      <y>26</y>
       <width>1236</width>
       <height>999</height>
    </windowPos>
