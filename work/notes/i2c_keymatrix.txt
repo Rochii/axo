@@ -1,0 +1,22 @@
+
+ADP5586
+http://www.analog.com/media/en/technical-documentation/data-sheets/ADP5586.pdf
+5x5 matrix
+
+LM8330
+http://www.ti.com/lit/ds/symlink/lm8330.pdf
+8x12 matrix
+
+TCA8418
+http://www.ti.com/lit/ds/symlink/tca8418e.pdf
+8x10 matrix
+
+MAX7360
+https://datasheets.maximintegrated.com/en/ds/MAX7360.pdf
+8x8 matrix
+
+MCP23017 (i2c)
+MCP23S17 (spi)
+https://cdn-shop.adafruit.com/datasheets/mcp23017.pdf
+16 bit I2C IO-Expander
+
