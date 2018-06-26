@@ -130,7 +130,9 @@ static void *mpr121_malloc(size_t size) {
 // read an 8 bit value from a register
 static int mpr121_rd8(struct mpr121_state *s, uint8_t reg, uint8_t * val) {
 	s->tx[0] = reg;
+	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 1, MPR121_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
 	*val = *(uint8_t *) s->rx;
 	return (rc == RDY_OK) ? 0 : -1;
 }
@@ -138,7 +140,9 @@ static int mpr121_rd8(struct mpr121_state *s, uint8_t reg, uint8_t * val) {
 // read a 16 bit value from a register
 static int mpr121_rd16(struct mpr121_state *s, uint8_t reg, uint16_t * val) {
 	s->tx[0] = reg;
+	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 2, MPR121_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
 	*val = *(uint16_t *) s->rx;
 	return (rc == RDY_OK) ? 0 : -1;
 }
@@ -147,7 +151,9 @@ static int mpr121_rd16(struct mpr121_state *s, uint8_t reg, uint16_t * val) {
 static int mpr121_wr8(struct mpr121_state *s, uint8_t reg, uint8_t val) {
 	s->tx[0] = reg;
 	s->tx[1] = val;
+	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 2, NULL, 0, MPR121_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
 	return (rc == RDY_OK) ? 0 : -1;
 }
 

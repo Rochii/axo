@@ -1,28 +1,34 @@
 <patch-1.0 appVersion="1.0.12">
-   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="14" y="14">
+   <comment type="patch/comment" x="14" y="14" text="MPR121 Capacitive Touch Sensor Example"/>
+   <comment type="patch/comment" x="14" y="42" text="A single instance of this object configures the I2C1 bus"/>
+   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="14" y="56">
       <params/>
       <attribs/>
    </obj>
-   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_1" x="154" y="70">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="touch/mpr121" uuid="8a934ce6-bd31-4007-8dfe-b674aaa3b9c5" name="mpr121_1" x="14" y="98">
+   <comment type="patch/comment" x="14" y="112" text="MPR121 driver object"/>
+   <comment type="patch/comment" x="182" y="112" text="bits 11..0 encode the electrode touch state"/>
+   <obj type="touch/mpr121" uuid="8a934ce6-bd31-4007-8dfe-b674aaa3b9c5" name="mpr121_1" x="14" y="126">
       <params/>
       <attribs>
          <combo attributeName="adr" selection="0x5a"/>
       </attribs>
    </obj>
-   <obj type="logic/getbit" uuid="6892e6e7-8112-4b59-a7ba-5b4fd002e8dc" name="getbit_1" x="154" y="168">
+   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_1" x="182" y="126">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="logic/getbit" uuid="6892e6e7-8112-4b59-a7ba-5b4fd002e8dc" name="getbit_1" x="126" y="266">
       <params/>
       <attribs>
          <spinner attributeName="bit" value="0"/>
       </attribs>
    </obj>
-   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_2" x="238" y="168">
+   <obj type="disp/i" uuid="5e35fd0c62d81e70017289250cf28edd26e19e4a" name="i_2" x="224" y="266">
       <params/>
       <attribs/>
    </obj>
+   <comment type="patch/comment" x="14" y="364" text="1) There can be up to 4 MPR121 objects on the I2C1 bus. They each must have a unique I2C address."/>
+   <comment type="patch/comment" x="14" y="392" text="2) The MPR121 configuration can be customized for each object. See the local data for the object."/>
    <nets>
       <net>
          <source obj="mpr121_1" outlet="touch"/>
@@ -36,11 +42,17 @@
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
+      <MidiChannel>1</MidiChannel>
+      <NPresets>8</NPresets>
+      <NPresetEntries>32</NPresetEntries>
+      <NModulationSources>8</NModulationSources>
+      <NModulationTargetsPerSource>8</NModulationTargetsPerSource>
+      <Author></Author>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>448</x>
-      <y>47</y>
+      <x>617</x>
+      <y>59</y>
       <width>1098</width>
       <height>1006</height>
    </windowPos>
