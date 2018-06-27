@@ -18,14 +18,14 @@ https://en.wikipedia.org/wiki/Brownian_noise
 //-----------------------------------------------------------------------------
 
 // convert a q1.31 to a float32
-static inline float q31_to_float(int32_t op1) {
+static float q31_to_float(int32_t op1) {
 	float fop1 = *(float *)(&op1);
 	__ASM volatile ("VCVT.F32.S32 %0, %0, 31":"+w" (fop1));
 	return fop1;
 }
 
 // return a float [-1, 1)
-static inline float rand_float(void) {
+static float rand_float(void) {
 	return q31_to_float(rand_s32());
 }
 
@@ -35,21 +35,21 @@ struct noise_state {
 	float b0, b1, b2, b3, b4, b5, b6;
 };
 
-static inline void noise_init(struct noise_state *s) {
+static void noise_init(struct noise_state *s) {
 	memset(s, 0, sizeof(struct noise_state));
 }
 
 //-----------------------------------------------------------------------------
 
 // white noise (spectral density = k)
-static inline void white_noise(int32_t * out) {
+static void white_noise(int32_t * out) {
 	for (size_t i = 0; i < BUFSIZE; i++) {
 		out[i] = rand_s32() >> 4;
 	}
 }
 
 // brown noise (spectral density = k/f*f
-static inline void brown_noise(struct noise_state *s, int32_t * out) {
+static void brown_noise(struct noise_state *s, int32_t * out) {
 	float b0 = s->b0;
 	for (size_t i = 0; i < BUFSIZE; i++) {
 		float white = rand_float();
@@ -60,7 +60,7 @@ static inline void brown_noise(struct noise_state *s, int32_t * out) {
 }
 
 // pink noise (spectral density = k/f): fast, inaccurate version
-static inline void pink_noise1(struct noise_state *s, int32_t * out) {
+static void pink_noise1(struct noise_state *s, int32_t * out) {
 	float b0 = s->b0;
 	float b1 = s->b1;
 	float b2 = s->b2;
@@ -78,7 +78,7 @@ static inline void pink_noise1(struct noise_state *s, int32_t * out) {
 }
 
 // pink noise (spectral density = k/f): slow, accurate version
-static inline void pink_noise2(struct noise_state *s, int32_t * out) {
+static void pink_noise2(struct noise_state *s, int32_t * out) {
 	float b0 = s->b0;
 	float b1 = s->b1;
 	float b2 = s->b2;

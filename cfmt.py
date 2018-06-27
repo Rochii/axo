@@ -10,6 +10,8 @@ src_dirs = (
   'work/objects/osc',
   'work/objects/touch',
   'work/objects/logic',
+  'repos/axoloti-contrib/objects/deadsy/touch',
+  'repos/axoloti-contrib/objects/deadsy/input',
 )
 
 src_filter_out = (

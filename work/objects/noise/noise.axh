@@ -1,0 +1,80 @@
+<patch-1.0 appVersion="1.0.12">
+   <comment type="patch/comment" x="28" y="14" text="Noise Sources"/>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="280" y="56">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="noise/white" uuid="8aecb7f5-6da2-43bf-8224-62af8b295067" name="white_1" x="28" y="70">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="noise/brown" uuid="a0d6a624-bc27-41bf-aaec-5e9489d409d0" name="brown_1" x="28" y="126">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="mux/mux 4" uuid="e511105cf5630d1a0b4a144dc3fabb3cc7c07bd" name="mux_1" x="140" y="140">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="spectral/analyzer 24" uuid="9cec9a9e7d56bf2af1a5c2312bc5b87e7ce27b14" name="analyzer24db21" x="280" y="168">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="noise/pink1" uuid="61ad0a57-0279-4d8d-b57d-3780ed1d176f" name="pink1_1" x="28" y="182">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="noise/pink2" uuid="7d53522c-f0ff-438f-a161-2d30ed873ad3" name="pink2_1" x="28" y="238">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/i radio 4 v" uuid="b610704137c90b0e43464440b84bfb4fb7d2bb30" name="i_1" x="14" y="308">
+      <params>
+         <int32.vradio name="value" value="0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="disp/scope 128 b" uuid="2b69f51a714fc276503ef10c349d6d253d1ae5e2" name="scope_128s1" x="280" y="350">
+      <params/>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="pink2_1" outlet="wave"/>
+         <dest obj="mux_1" inlet="i3"/>
+      </net>
+      <net>
+         <source obj="white_1" outlet="wave"/>
+         <dest obj="mux_1" inlet="i0"/>
+      </net>
+      <net>
+         <source obj="brown_1" outlet="wave"/>
+         <dest obj="mux_1" inlet="i1"/>
+      </net>
+      <net>
+         <source obj="pink1_1" outlet="wave"/>
+         <dest obj="mux_1" inlet="i2"/>
+      </net>
+      <net>
+         <source obj="i_1" outlet="out"/>
+         <dest obj="mux_1" inlet="s"/>
+      </net>
+      <net>
+         <source obj="mux_1" outlet="o"/>
+         <dest obj="out_1" inlet="left"/>
+         <dest obj="out_1" inlet="right"/>
+         <dest obj="analyzer24db21" inlet="in"/>
+         <dest obj="scope_128s1" inlet="in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>188</x>
+      <y>89</y>
+      <width>1292</width>
+      <height>964</height>
+   </windowPos>
+</patch-1.0>

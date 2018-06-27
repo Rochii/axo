@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<objdefs appVersion="1.0.12">
+  <obj.normal id="white" uuid="8aecb7f5-6da2-43bf-8224-62af8b295067">
+    <sDescription>White Noise (spectral density = k)</sDescription>
+    <author>Jason Harris</author>
+    <license>BSD</license>
+    <inlets/>
+    <outlets>
+      <frac32buffer.bipolar name="wave" description="white noise"/>
+    </outlets>
+    <displays/>
+    <params/>
+    <attribs/>
+    <includes>
+      <include>./noise.h</include>
+    </includes>
+    <code.krate><![CDATA[white_noise(outlet_wave);]]></code.krate>
+  </obj.normal>
+  <obj.normal id="brown" uuid="a0d6a624-bc27-41bf-aaec-5e9489d409d0">
+    <sDescription>Brown Noise (spectral density = k/f*f)</sDescription>
+    <author>Jason Harris</author>
+    <license>BSD</license>
+    <inlets/>
+    <outlets>
+      <frac32buffer.bipolar name="wave" description="brown noise"/>
+    </outlets>
+    <displays/>
+    <params/>
+    <attribs/>
+    <includes>
+      <include>./noise.h</include>
+    </includes>
+    <code.declaration><![CDATA[struct noise_state state;]]></code.declaration>
+    <code.init><![CDATA[noise_init(&state);]]></code.init>
+    <code.krate><![CDATA[brown_noise(&state, outlet_wave);]]></code.krate>
+  </obj.normal>
+  <obj.normal id="pink1" uuid="61ad0a57-0279-4d8d-b57d-3780ed1d176f">
+    <sDescription>pink noise (spectral density = k/f): fast, inaccurate version</sDescription>
+    <author>Jason Harris</author>
+    <license>BSD</license>
+    <inlets/>
+    <outlets>
+      <frac32buffer.bipolar name="wave" description="brown noise"/>
+    </outlets>
+    <displays/>
+    <params/>
+    <attribs/>
+    <includes>
+      <include>./noise.h</include>
+    </includes>
+    <code.declaration><![CDATA[struct noise_state state;]]></code.declaration>
+    <code.init><![CDATA[noise_init(&state);]]></code.init>
+    <code.krate><![CDATA[pink_noise1(&state, outlet_wave);]]></code.krate>
+  </obj.normal>
+  <obj.normal id="pink2" uuid="7d53522c-f0ff-438f-a161-2d30ed873ad3">
+    <sDescription>pink noise (spectral density = k/f): slow, accurate version</sDescription>
+    <author>Jason Harris</author>
+    <license>BSD</license>
+    <inlets/>
+    <outlets>
+      <frac32buffer.bipolar name="wave" description="brown noise"/>
+    </outlets>
+    <displays/>
+    <params/>
+    <attribs/>
+    <includes>
+      <include>./noise.h</include>
+    </includes>
+    <code.declaration><![CDATA[struct noise_state state;]]></code.declaration>
+    <code.init><![CDATA[noise_init(&state);]]></code.init>
+    <code.krate><![CDATA[pink_noise2(&state, outlet_wave);]]></code.krate>
+  </obj.normal>
+</objdefs>
