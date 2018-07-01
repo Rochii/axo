@@ -1,5 +1,9 @@
 <patch-1.0 appVersion="1.0.12">
-   <obj type="sx1509/key" uuid="c5099386-ca22-4ee7-926c-3b92e6e4a93f" name="key_1" x="14" y="14">
+   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="42" y="56">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="sx1509/key" uuid="c5099386-ca22-4ee7-926c-3b92e6e4a93f" name="key_1" x="42" y="98">
       <params/>
       <attribs>
          <combo attributeName="adr" selection="0x3e"/>
@@ -11,8 +15,8 @@
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>532</x>
-      <y>0</y>
+      <x>725</x>
+      <y>105</y>
       <width>1036</width>
       <height>926</height>
    </windowPos>

@@ -9,6 +9,7 @@ src_dirs = (
   'work/objects/noise',
   'work/objects/osc',
   'work/objects/sx1509',
+  'work/objects/rei2c',
   'repos/axoloti-contrib/objects/deadsy/mpr121',
   'repos/axoloti-contrib/objects/deadsy/ttp229',
   'repos/axoloti-contrib/objects/deadsy/input',
