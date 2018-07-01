@@ -8,9 +8,9 @@ import os
 src_dirs = (
   'work/objects/noise',
   'work/objects/osc',
-  'work/objects/touch',
-  'work/objects/logic',
-  'repos/axoloti-contrib/objects/deadsy/touch',
+  'work/objects/sx1509',
+  'repos/axoloti-contrib/objects/deadsy/mpr121',
+  'repos/axoloti-contrib/objects/deadsy/ttp229',
   'repos/axoloti-contrib/objects/deadsy/input',
 )
 
