@@ -4,26 +4,32 @@
 See: https://www.quinapalus.com/goom.html</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
-      <inlets/>
+      <inlets>
+         <frac32.bipolar name="pitch"/>
+         <frac32buffer name="freq"/>
+         <frac32buffer name="phase"/>
+         <int32.positive name="duty"/>
+         <int32.positive name="slope"/>
+      </inlets>
       <outlets>
          <frac32buffer.bipolar name="wave" description="goom wave"/>
       </outlets>
       <displays/>
-      <params>
-         <frac32.u.map name="duty"/>
-         <frac32.u.map name="slope"/>
-      </params>
+      <params/>
       <attribs/>
       <includes>
          <include>./goom.h</include>
       </includes>
       <code.declaration><![CDATA[struct goom_state state;]]></code.declaration>
       <code.init><![CDATA[goom_init(&state);]]></code.init>
-      <code.krate><![CDATA[goom_wave(
+      <code.krate><![CDATA[goom_krate(
   &state,
-  outlet_wave,
-  param_duty,
-  param_slope
+  inlet_pitch,
+  inlet_freq,
+  inlet_phase,
+  inlet_duty,
+  inlet_slope,
+  outlet_wave
 );]]></code.krate>
    </obj.normal>
 </objdefs>
