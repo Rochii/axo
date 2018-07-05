@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # Format the project source code per the standard (linux style)
 
 import glob
@@ -10,6 +10,9 @@ src_dirs = (
   'work/objects/osc',
   'work/objects/sx1509',
   'work/objects/rei2c',
+  'work/objects/adxl345',
+  'work/objects/hmc5883l',
+  'work/objects/itg3200',
   'repos/axoloti-contrib/objects/deadsy/mpr121',
   'repos/axoloti-contrib/objects/deadsy/ttp229',
   'repos/axoloti-contrib/objects/deadsy/input',

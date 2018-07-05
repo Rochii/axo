@@ -38,7 +38,7 @@ The idea for goom waves comes from: https://www.quinapalus.com/goom.html
 //-----------------------------------------------------------------------------
 
 // map a 0..127 midi control value from a..b
-float midi_map(uint8_t val, float a, float b) {
+static float midi_map(uint8_t val, float a, float b) {
 	return a + ((b - a) / 127.f) * (float)(val & 0x7f);
 }
 
