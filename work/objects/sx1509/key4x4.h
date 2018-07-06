@@ -312,3 +312,7 @@ static void sx1509_key(struct sx1509_state *s, int32_t * key) {
 #endif				// DEADSY_SX1509_H
 
 //-----------------------------------------------------------------------------
+
+#ifndef DEADSY_KEY4X4_H
+#define DEADSY_KEY4X4_H
+#endif				// DEADSY_KEY4X4_H

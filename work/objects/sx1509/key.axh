@@ -3,7 +3,7 @@
       <params/>
       <attribs/>
    </obj>
-   <obj type="sx1509/key" uuid="c5099386-ca22-4ee7-926c-3b92e6e4a93f" name="key_1" x="42" y="98">
+   <obj type="sx1509/key4x4" uuid="409339ae-fd74-4d02-8caa-e1114d73706e" name="key4x4_1" x="42" y="98">
       <params/>
       <attribs>
          <combo attributeName="adr" selection="0x3e"/>
@@ -15,8 +15,8 @@
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>725</x>
-      <y>105</y>
+      <x>528</x>
+      <y>107</y>
       <width>1036</width>
       <height>926</height>
    </windowPos>
