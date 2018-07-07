@@ -226,6 +226,13 @@ static int sx1509_reset(struct sx1509_state *s) {
 	return rc;
 }
 
+// read the current key data
+static int sx1509_rd_key(struct sx1509_state *s, uint16_t * val) {
+	int rc = sx1509_rd16(s, SX1509_KEY_DATA_1, val);
+	*val ^= 0xffff;
+	return rc;
+}
+
 //-----------------------------------------------------------------------------
 
 static void sx1509_info(struct sx1509_state *s, const char *msg) {
@@ -239,6 +246,50 @@ static void sx1509_error(struct sx1509_state *s, const char *msg) {
 		chThdSleepMilliseconds(100);
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+/*
+
+static const EXTConfig extcfg = {
+  {
+    {EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL}
+  }
+};
+
+#define STM32_EXTI0_HANDLER Vector58
+
+CH_IRQ_HANDLER(STM32_EXTI0_HANDLER) {
+	CH_IRQ_PROLOGUE();
+	chSysLockFromIsr();
+	chEvtSignalI(NULL, (eventmask_t) 1);
+	chSysUnlockFromIsr();
+	CH_IRQ_EPILOGUE();
+}
+
+*/
 
 //-----------------------------------------------------------------------------
 
@@ -276,8 +327,18 @@ static msg_t sx1509_thread(void *arg) {
 		idx += 1;
 	}
 
+	//extStart(&EXTD1, &extcfg);
+
+	uint16_t oldval;
+
 	while (!chThdShouldTerminate()) {
-		chThdSleepMilliseconds(100);
+		uint16_t val;
+		sx1509_rd_key(s, &val);
+		if (val != oldval && val != 0) {
+			LogTextMessage("%04x", val);
+		}
+		oldval = val;
+		chThdSleepMilliseconds(20);
 	}
 
  exit:

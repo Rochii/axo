@@ -197,7 +197,11 @@ class sx1509(object):
 
   def gen_includes(self):
     """generate the include file declaration"""
-    return gen_tag('include', './%s.h' % self.name)
+    s = []
+    # See: https://github.com/axoloti/axoloti/issues/378
+    #s.append(gen_tag('include', './%s' % _base_driver))
+    s.append(gen_tag('include', './%s.h' % self.name))
+    return '\n'.join(s)
 
   def gen_attribs(self):
     """generate the driver attributes"""
@@ -242,6 +246,7 @@ class sx1509(object):
   def gen_h(self):
     """generate the object *.h file"""
     # read the base driver code
+    # See: https://github.com/axoloti/axoloti/issues/378
     f = open(_base_driver, 'r')
     drv = f.read()
     f.close()
