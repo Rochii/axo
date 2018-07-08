@@ -142,6 +142,7 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 //-----------------------------------------------------------------------------
 
 #define SX1509_I2C_TIMEOUT 30	// chibios ticks
+#define SX1509_MAX_ROWS 8	// maximum key scan rows
 
 //-----------------------------------------------------------------------------
 
@@ -149,6 +150,12 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 struct sx1509_cfg {
 	uint8_t reg;
 	uint8_t val;
+};
+
+// key scan row status
+struct sx1509_row {
+	uint8_t col;		// column state
+	uint8_t to;		// scan data timout
 };
 
 // sx1509 state variables
@@ -160,6 +167,7 @@ struct sx1509_state {
 	i2caddr_t adr;		// i2c device address
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
+	struct sx1509_row keys[SX1509_MAX_ROWS];
 };
 
 //-----------------------------------------------------------------------------
@@ -226,11 +234,79 @@ static int sx1509_reset(struct sx1509_state *s) {
 	return rc;
 }
 
+//-----------------------------------------------------------------------------
+// Key Scanning
+
+#define SX1509_MAX_COLS 8	// maximum key scan columns
+#define SX1509_KEY_POLL 16	// polling time in ms
+#define SX1509_SCAN_TIMEOUT 6	// scan data timeout (x polling time)
+
 // read the current key data
-static int sx1509_rd_key(struct sx1509_state *s, uint16_t * val) {
-	int rc = sx1509_rd16(s, SX1509_KEY_DATA_1, val);
-	*val ^= 0xffff;
-	return rc;
+static uint16_t sx1509_rd_key(struct sx1509_state *s) {
+	uint16_t val;
+	sx1509_rd16(s, SX1509_KEY_DATA_1, &val);
+	return val ^ 0xffff;
+}
+
+// successively convert the multiple column bits to 0..7
+static int sx1509_getcol(uint8_t * val) {
+	if (*val == 0) {
+		return -1;
+	}
+	int col = __builtin_ctz(*val);
+	*val &= ~(1 << col);
+	return col;
+}
+
+// convert the single row bit to 0..7
+static int sx1509_getrow(uint8_t val) {
+	return __builtin_ctz(val);
+}
+
+static void sx1509_key_polling(struct sx1509_state *s) {
+	// process any current key scan data
+	uint16_t val = sx1509_rd_key(s);
+	if (val) {
+		int row = sx1509_getrow(val >> 8);
+		uint8_t col_old = s->keys[row].col;
+		uint8_t col_new = val & 0xff;
+		if (col_new != col_old) {
+			// 0->1: key down
+			uint8_t dn = ~col_old & col_new;
+			if (dn) {
+				int col;
+				while ((col = sx1509_getcol(&dn)) >= 0) {
+					LogTextMessage("key dn: (%d,%d)", row, col);
+				}
+			}
+			// 1->0: key up
+			uint8_t up = col_old & ~col_new;
+			if (up) {
+				int col;
+				while ((col = sx1509_getcol(&up)) >= 0) {
+					LogTextMessage("key up: (%d,%d)", row, col);
+				}
+			}
+		}
+		// update the key scan data
+		s->keys[row].col = col_new;
+		s->keys[row].to = 0xff;	// increment to 0 in the timeout loop
+	}
+	// timeout the current key state
+	for (size_t i = 0; i < SX1509_MAX_ROWS; i++) {
+		if (s->keys[i].col) {
+			s->keys[i].to++;
+			if (s->keys[i].to > SX1509_SCAN_TIMEOUT) {
+				uint8_t up = s->keys[i].col;
+				int col;
+				while ((col = sx1509_getcol(&up)) >= 0) {
+					LogTextMessage("key up: (%d,%d) to", i, col);
+				}
+				s->keys[i].col = 0;
+				s->keys[i].to = 0;
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -246,50 +322,6 @@ static void sx1509_error(struct sx1509_state *s, const char *msg) {
 		chThdSleepMilliseconds(100);
 	}
 }
-
-//-----------------------------------------------------------------------------
-
-/*
-
-static const EXTConfig extcfg = {
-  {
-    {EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_DISABLED, NULL}
-  }
-};
-
-#define STM32_EXTI0_HANDLER Vector58
-
-CH_IRQ_HANDLER(STM32_EXTI0_HANDLER) {
-	CH_IRQ_PROLOGUE();
-	chSysLockFromIsr();
-	chEvtSignalI(NULL, (eventmask_t) 1);
-	chSysUnlockFromIsr();
-	CH_IRQ_EPILOGUE();
-}
-
-*/
 
 //-----------------------------------------------------------------------------
 
@@ -327,18 +359,9 @@ static msg_t sx1509_thread(void *arg) {
 		idx += 1;
 	}
 
-	//extStart(&EXTD1, &extcfg);
-
-	uint16_t oldval;
-
 	while (!chThdShouldTerminate()) {
-		uint16_t val;
-		sx1509_rd_key(s, &val);
-		if (val != oldval && val != 0) {
-			LogTextMessage("%04x", val);
-		}
-		oldval = val;
-		chThdSleepMilliseconds(20);
+		sx1509_key_polling(s);
+		chThdSleepMilliseconds(SX1509_KEY_POLL);
 	}
 
  exit:
@@ -364,7 +387,7 @@ static void sx1509_dispose(struct sx1509_state *s) {
 	chThdWait(s->thd);
 }
 
-// krate key function (they are the same for all object variants)
+// krate key function (the same for all object variants)
 static void sx1509_key(struct sx1509_state *s, int32_t * key) {
 }
 

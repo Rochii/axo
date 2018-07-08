@@ -26,7 +26,7 @@
       </combo>
     </attribs>
     <includes>
-      <include>./key4x4.h</include>
+      <include>./sx1509.h</include>
     </includes>
     <depends>
       <depend>I2CD1</depend>
@@ -37,9 +37,9 @@
       {SX1509_DIR_A, 0xf0},
       {SX1509_OPEN_DRAIN_A, 0x0f},
       {SX1509_PULL_UP_B, 0x0f},
-      {SX1509_DEBOUNCE_CONFIG, 0x04},
+      {SX1509_DEBOUNCE_CONFIG, 0x03},
       {SX1509_DEBOUNCE_ENABLE_B, 0x0f},
-      {SX1509_KEY_CONFIG_1, 0x65},
+      {SX1509_KEY_CONFIG_1, 0x43},
       {SX1509_KEY_CONFIG_2, 0x1b},
       {0xff, 0x00},
     };

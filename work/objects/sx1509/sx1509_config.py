@@ -145,7 +145,7 @@ class sx1509(object):
       vals = {'off':0,'128ms':1,'256ms':2,'512ms':3,'1s':4,'2s':5,'4s':6,'8s':7,}
       pr_error('invalid auto sleep time', sleep not in vals)
       val |= vals[sleep] << 4
-      # scan time
+      # row scan time
       vals = {'1ms':0,'2ms':1,'4ms':2,'8ms':3,'16ms':4,'32ms':5,'64ms':6,'128ms':7,}
       pr_error('invalid scan time', scan not in vals)
       val |= vals[scan]
@@ -170,10 +170,10 @@ class sx1509(object):
     self.DIR_B()
     self.PULL_UP_B()
     # input debouncing
-    self.DEBOUNCE_CONFIG('8ms')
+    self.DEBOUNCE_CONFIG('4ms')
     self.DEBOUNCE_ENABLE_B()
     # key configuration
-    self.KEY_CONFIG_1('4s', '32ms')
+    self.KEY_CONFIG_1('1s', '8ms')
     self.KEY_CONFIG_2()
     # terminate the register value list
     self.eol()
@@ -199,8 +199,8 @@ class sx1509(object):
     """generate the include file declaration"""
     s = []
     # See: https://github.com/axoloti/axoloti/issues/378
-    #s.append(gen_tag('include', './%s' % _base_driver))
-    s.append(gen_tag('include', './%s.h' % self.name))
+    s.append(gen_tag('include', './%s' % _base_driver))
+    #s.append(gen_tag('include', './%s.h' % self.name))
     return '\n'.join(s)
 
   def gen_attribs(self):
@@ -262,7 +262,7 @@ class sx1509(object):
 
   def generate(self):
     wr_file('%s.axo' % self.name, self.gen_axo())
-    wr_file('%s.h' % self.name, self.gen_h())
+    #wr_file('%s.h' % self.name, self.gen_h())
 
 #------------------------------------------------------------------------------
 
