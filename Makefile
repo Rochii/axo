@@ -1,15 +1,25 @@
 TOP=.
 
+BRANCH ?= master
+
 REPOS=$(TOP)/repos
 BUILD=$(TOP)/axoloti
 DL=$(TOP)/dl
 
-CHIBIOS=ChibiOS_2.6.9.zip
-GCC=gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2
+ifeq ($(BRANCH),master)
+  CHIBIOS=ChibiOS_2.6.9.zip
+  GCC=gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2
+else ifeq ($(BRANCH),experimental)
+  CHIBIOS=ChibiOS_18.2.0.zip
+  GCC=gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2
+else
+
+endif
+
 DFU=dfu-util-0.8.tar.gz
 LIBUSB=libusb-1.0.19.tar.bz2
 
-PATCHFILES = $(sort $(wildcard patches/*.patch ))
+PATCHFILES = $(sort $(wildcard patches/$(BRANCH)/*.patch ))
 
 PATCH_CMD = \
 	for f in $(PATCHFILES); do\
@@ -18,7 +28,7 @@ PATCH_CMD = \
 	done
 
 COPY_CMD = \
-	cd files; tar -c -f - * | (cd ../$(BUILD) ; tar xfp -)
+	cd files/$(BRANCH); tar -c -f - * | (cd ../$(BUILD) ; tar xfp -)
 
 define update_repo
 	if [ ! -d $(REPOS)/$(1)/.git ]; then \
@@ -31,11 +41,12 @@ endef
 .PHONY: all repos tarball update clean
 
 all:
-	tar zxf $(DL)/axoloti.tgz 
+	tar zxf $(DL)/axoloti_$(BRANCH).tgz 
 	$(PATCH_CMD)
 	$(COPY_CMD)
 	-cp $(DL)/$(CHIBIOS) $(BUILD)/platform_linux/src
 	-cp $(DL)/$(GCC) $(BUILD)/platform_linux/src
+	-cp $(DL)/$(GCC) $(BUILD)/platform_linux
 	-cp $(DL)/$(DFU) $(BUILD)/platform_linux/src
 	-cp $(DL)/$(LIBUSB) $(BUILD)/platform_linux/src
 	-cp axoloti.prefs $(BUILD)
@@ -48,7 +59,8 @@ repos:
 	$(call update_repo,axoloti-factory)
 
 tarball:
-	tar -C $(REPOS) -zcf $(DL)/axoloti.tgz axoloti
+	git -C $(REPOS)/axoloti checkout $(BRANCH); git pull
+	tar -C $(REPOS) -zcf $(DL)/axoloti_$(BRANCH).tgz axoloti
 
 update: repos tarball
 
