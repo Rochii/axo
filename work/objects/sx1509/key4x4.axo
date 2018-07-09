@@ -31,7 +31,23 @@
     <depends>
       <depend>I2CD1</depend>
     </depends>
-    <code.declaration><![CDATA[const struct sx1509_cfg config[10] = {
+    <code.declaration><![CDATA[// pin 0: key row 0
+    // pin 1: key row 1
+    // pin 2: key row 2
+    // pin 3: key row 3
+    // pin 4: not used
+    // pin 5: not used
+    // pin 6: not used
+    // pin 7: not used
+    // pin 8: key col 0
+    // pin 9: key col 1
+    // pin 10: key col 2
+    // pin 11: key col 3
+    // pin 12: not used
+    // pin 13: not used
+    // pin 14: not used
+    // pin 15: not used
+    const struct sx1509_cfg config[10] = {
       {SX1509_CLOCK, 0x50},
       {SX1509_MISC, 0x10},
       {SX1509_DIR_A, 0xf0},

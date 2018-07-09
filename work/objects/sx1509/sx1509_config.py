@@ -20,7 +20,7 @@ _device_adr = (0x3e, 0x3f, 0x70, 0x71)
 def pr_error(msg, cond):
   """upon condition, print an error message and exit"""
   if cond:
-    printf(msg)
+    print(msg)
     sys.exit(-1)
 
 def wr_file(fname, data):
@@ -57,26 +57,44 @@ class sx1509(object):
     self.keys = False
     self.rows = 0
     self.cols = 0
+    self.row_bits = 0
+    self.col_bits = 0
     self.cfg = []
     self.alloc = [None,] * _num_io_pins
 
-  def usage(self, i, s):
+  def set_usage(self, i, s):
     """set the usage of an io pin"""
     pr_error('bad io pin: %d' % i, i not in range(_num_io_pins))
     if self.alloc[i] is None:
-        self.alloc[i] = s
-        return True
+      self.alloc[i] = s
+      return True
     return False
+
+  def print_usage(self):
+    """return a string for the pin usage"""
+    s = []
+    for i in range(_num_io_pins):
+      usage = self.alloc[i]
+      if usage is None:
+        usage = 'not used'
+      s.append('// pin %d: %s' % (i, usage))
+    return '\n'.join(s)
 
   def key_scanning(self, rows, cols):
     """configure for key scanning"""
-    pr_error('bad key scan rows: %d' % rows, rows not in (2,3,4,5,6,7,8))
-    pr_error('bad key scan cols: %d' % cols, cols not in (1, 2,3,4,5,6,7,8))
+    pr_error('bad key scan rows: %d' % rows, rows not in (2, 3, 4, 5, 6, 7, 8))
+    pr_error('bad key scan cols: %d' % cols, cols not in (1, 2, 3, 4, 5, 6, 7, 8))
     self.keys = True
     self.rows = rows
     self.cols = cols
     self.row_bits = (1 << rows) - 1
     self.col_bits = (1 << cols) - 1
+    for i in range(self.rows):
+      good = self.set_usage(i, 'key row %d' % i)
+      pr_error('row pin already used: %d' % i, not good)
+    for i in range(self.cols):
+      good = self.set_usage(8 + i, 'key col %d' % i)
+      pr_error('col pin already used: %d' % i, not good)
 
   def wr(self, name, default, val):
     if val != default:
@@ -127,7 +145,7 @@ class sx1509(object):
     self.wr('PULL_UP_B', 0, val)
 
   def DEBOUNCE_CONFIG(self, ms):
-    vals = {'0.5ms':0,'1ms':1,'2ms':2,'4ms':3,'8ms':4,'16ms':5,'32ms':6,'64ms':7,}
+    vals = {'0.5ms':0, '1ms':1, '2ms':2, '4ms':3, '8ms':4, '16ms':5, '32ms':6, '64ms':7,}
     pr_error('invalid debounce time', ms not in vals)
     self.wr('DEBOUNCE_CONFIG', 0, vals[ms])
 
@@ -142,11 +160,11 @@ class sx1509(object):
     val = 0
     if self.keys:
       # auto sleep time
-      vals = {'off':0,'128ms':1,'256ms':2,'512ms':3,'1s':4,'2s':5,'4s':6,'8s':7,}
+      vals = {'off':0, '128ms':1, '256ms':2, '512ms':3, '1s':4, '2s':5, '4s':6, '8s':7,}
       pr_error('invalid auto sleep time', sleep not in vals)
       val |= vals[sleep] << 4
       # row scan time
-      vals = {'1ms':0,'2ms':1,'4ms':2,'8ms':3,'16ms':4,'32ms':5,'64ms':6,'128ms':7,}
+      vals = {'1ms':0, '2ms':1, '4ms':2, '8ms':3, '16ms':4, '32ms':5, '64ms':6, '128ms':7,}
       pr_error('invalid scan time', scan not in vals)
       val |= vals[scan]
     self.wr('KEY_CONFIG_1', 0, val)
@@ -178,10 +196,11 @@ class sx1509(object):
     # terminate the register value list
     self.eol()
     s = []
+    s.append(self.print_usage())
     s.append('const struct sx1509_cfg config[%d] = {' % len(self.cfg))
     s.extend(['  {%s, 0x%02x},' % x for x in self.cfg])
     s.append('};')
-    s.append('struct sx1509_state state;');
+    s.append('struct sx1509_state state;')
     return '\n'.join(s)
 
   def gen_krate(self):
