@@ -142,7 +142,9 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 //-----------------------------------------------------------------------------
 
 #define SX1509_I2C_TIMEOUT 30	// chibios ticks
+
 #define SX1509_MAX_ROWS 8	// maximum key scan rows
+#define SX1509_MAX_COLS 8	// maximum key scan columns
 
 //-----------------------------------------------------------------------------
 
@@ -237,15 +239,19 @@ static int sx1509_reset(struct sx1509_state *s) {
 //-----------------------------------------------------------------------------
 // Key Scanning
 
-#define SX1509_MAX_COLS 8	// maximum key scan columns
-#define SX1509_KEY_POLL 16	// polling time in ms
-#define SX1509_SCAN_TIMEOUT 6	// scan data timeout (x polling time)
+#define SX1509_KEY_POLL 10	// polling time in ms
+#define SX1509_SCAN_TIMEOUT 10	// scan data timeout (x polling time)
 
 // read the current key data
 static uint16_t sx1509_rd_key(struct sx1509_state *s) {
 	uint16_t val;
 	sx1509_rd16(s, SX1509_KEY_DATA_1, &val);
-	return val ^ 0xffff;
+	val ^= 0xffff;
+	if ((val >> 8) != 0 && (val & 0xff) == 0) {
+		// hw bug? row is valid, but with invalid column data - filter this out.
+		return 0;
+	}
+	return val;
 }
 
 // successively convert the multiple column bits to 0..7
