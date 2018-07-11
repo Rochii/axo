@@ -20,6 +20,14 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 #define DEADSY_SX1509_H
 
 //-----------------------------------------------------------------------------
+
+#if CH_KERNEL_MAJOR == 2
+#define THD_WORKING_AREA_SIZE THD_WA_SIZE
+#define MSG_OK RDY_OK
+#define THD_FUNCTION(tname, arg) msg_t tname(void *arg)
+#endif
+
+//-----------------------------------------------------------------------------
 // registers
 
 // Device and IO Banks
@@ -162,7 +170,7 @@ struct sx1509_row {
 
 // sx1509 state variables
 struct sx1509_state {
-	stkalign_t thd_wa[THD_WA_SIZE(512) / sizeof(stkalign_t)];	// thread working area
+	stkalign_t thd_wa[THD_WORKING_AREA_SIZE(512) / sizeof(stkalign_t)];	// thread working area
 	Thread *thd;		// thread pointer
 	const struct sx1509_cfg *cfg;	// driver configuration
 	I2CDriver *dev;		// i2c bus driver
@@ -203,7 +211,7 @@ static int sx1509_rd8(struct sx1509_state *s, uint8_t reg, uint8_t * val) {
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 1, SX1509_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
 	*val = *(uint8_t *) s->rx;
-	return (rc == RDY_OK) ? 0 : -1;
+	return (rc == MSG_OK) ? 0 : -1;
 }
 
 // read a 16 bit value from a register
@@ -213,7 +221,7 @@ static int sx1509_rd16(struct sx1509_state *s, uint8_t reg, uint16_t * val) {
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 2, SX1509_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
 	*val = *(uint16_t *) s->rx;
-	return (rc == RDY_OK) ? 0 : -1;
+	return (rc == MSG_OK) ? 0 : -1;
 }
 
 // write an 8 bit value to a register
@@ -223,7 +231,7 @@ static int sx1509_wr8(struct sx1509_state *s, uint8_t reg, uint8_t val) {
 	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 2, NULL, 0, SX1509_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
-	return (rc == RDY_OK) ? 0 : -1;
+	return (rc == MSG_OK) ? 0 : -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -331,7 +339,7 @@ static void sx1509_error(struct sx1509_state *s, const char *msg) {
 
 //-----------------------------------------------------------------------------
 
-static msg_t sx1509_thread(void *arg) {
+static THD_FUNCTION(sx1509_thread, arg) {
 	struct sx1509_state *s = (struct sx1509_state *)arg;
 	int rc = 0;
 	int idx = 0;

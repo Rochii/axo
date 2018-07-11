@@ -1,6 +1,7 @@
 TOP=.
 
-BRANCH ?= master
+BRANCH = master
+#BRANCH = experimental
 
 REPOS=$(TOP)/repos
 BUILD=$(TOP)/axoloti
