@@ -153,6 +153,13 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 
 #define SX1509_MAX_ROWS 8	// maximum key scan rows
 #define SX1509_MAX_COLS 8	// maximum key scan columns
+#define SX1509_DEBOUNCE_COUNT 2
+#define SX1509_KEY_POLL 4	// polling time in ms
+
+// key events
+#define SX1509_EVENT_NONE 0
+#define SX1509_EVENT_KEYDN 1
+#define SX1509_EVENT_KEYUP 2
 
 //-----------------------------------------------------------------------------
 
@@ -160,12 +167,6 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 struct sx1509_cfg {
 	uint8_t reg;
 	uint8_t val;
-};
-
-// key scan row status
-struct sx1509_row {
-	uint8_t col;		// column state
-	uint8_t to;		// scan data timout
 };
 
 // sx1509 state variables
@@ -177,7 +178,10 @@ struct sx1509_state {
 	i2caddr_t adr;		// i2c device address
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
-	struct sx1509_row keys[SX1509_MAX_ROWS];
+	uint64_t sample[SX1509_DEBOUNCE_COUNT];	// debounce buffer for key samples
+	uint64_t keys;		// current debounced key state
+	int idx;		// buffer index;
+	int row;		// current scan row;
 };
 
 //-----------------------------------------------------------------------------
@@ -245,82 +249,65 @@ static int sx1509_reset(struct sx1509_state *s) {
 }
 
 //-----------------------------------------------------------------------------
-// Key Scanning
 
-#define SX1509_KEY_POLL 10	// polling time in ms
-#define SX1509_SCAN_TIMEOUT 10	// scan data timeout (x polling time)
-
-// read the current key data
-static uint16_t sx1509_rd_key(struct sx1509_state *s) {
-	uint16_t val;
-	sx1509_rd16(s, SX1509_KEY_DATA_1, &val);
-	val ^= 0xffff;
-	if ((val >> 8) != 0 && (val & 0xff) == 0) {
-		// hw bug? row is valid, but with invalid column data - filter this out.
-		return 0;
-	}
-	return val;
+// count of trailing zeroes for uint64_t
+static int ctz64(uint64_t val) {
+	return (uint32_t) val ? __builtin_ctz(val) : 32 + __builtin_ctz(val >> 32);
 }
 
-// successively convert the multiple column bits to 0..7
-static int sx1509_getcol(uint8_t * val) {
+// successively convert the multiple key bits to 0..63
+static int sx1509_getkey(uint64_t * val) {
 	if (*val == 0) {
 		return -1;
 	}
-	int col = __builtin_ctz(*val);
-	*val &= ~(1 << col);
-	return col;
+	int key = ctz64(*val);
+	*val &= ~(1ULL << key);
+	return key;
 }
 
-// convert the single row bit to 0..7
-static int sx1509_getrow(uint8_t val) {
-	return __builtin_ctz(val);
+// generate key events
+static void sx1509_key_event(struct sx1509_state *s, uint64_t bits, int event) {
+	int key;
+	while ((key = sx1509_getkey(&bits)) >= 0) {
+		if (event == SX1509_EVENT_KEYDN) {
+			LogTextMessage("keydn %d", key);
+		} else {
+			LogTextMessage("keyup %d", key);
+		}
+	}
 }
 
+// poll and debounce the key matrix
 static void sx1509_key_polling(struct sx1509_state *s) {
-	// process any current key scan data
-	uint16_t val = sx1509_rd_key(s);
-	if (val) {
-		int row = sx1509_getrow(val >> 8);
-		uint8_t col_old = s->keys[row].col;
-		uint8_t col_new = val & 0xff;
-		if (col_new != col_old) {
-			// 0->1: key down
-			uint8_t dn = ~col_old & col_new;
-			if (dn) {
-				int col;
-				while ((col = sx1509_getcol(&dn)) >= 0) {
-					LogTextMessage("key dn: (%d,%d)", row, col);
-				}
-			}
-			// 1->0: key up
-			uint8_t up = col_old & ~col_new;
-			if (up) {
-				int col;
-				while ((col = sx1509_getcol(&up)) >= 0) {
-					LogTextMessage("key up: (%d,%d)", row, col);
-				}
-			}
-		}
-		// update the key scan data
-		s->keys[row].col = col_new;
-		s->keys[row].to = 0xff;	// increment to 0 in the timeout loop
+	// read the column bits
+	uint8_t col;
+	sx1509_rd8(s, SX1509_DATA_B, &col);
+	// add it to the sample buffer
+	s->sample[s->idx] &= ~(0xffULL << (s->row << 3));
+	s->sample[s->idx] |= (uint64_t) (col ^ 0xff) << (s->row << 3);
+	// work out the current key state
+	uint64_t keys = 0;
+	for (size_t i = 0; i < SX1509_DEBOUNCE_COUNT; i++) {
+		keys |= s->sample[i];
 	}
-	// timeout the current key state
-	for (size_t i = 0; i < SX1509_MAX_ROWS; i++) {
-		if (s->keys[i].col) {
-			s->keys[i].to++;
-			if (s->keys[i].to > SX1509_SCAN_TIMEOUT) {
-				uint8_t up = s->keys[i].col;
-				int col;
-				while ((col = sx1509_getcol(&up)) >= 0) {
-					LogTextMessage("key up: (%d,%d) to", i, col);
-				}
-				s->keys[i].col = 0;
-				s->keys[i].to = 0;
-			}
+	// has it changed?
+	if (keys != s->keys) {
+		sx1509_key_event(s, keys & ~s->keys, SX1509_EVENT_KEYDN);
+		sx1509_key_event(s, ~keys & s->keys, SX1509_EVENT_KEYUP);
+		s->keys = keys;
+	}
+	// increment/wrap the row index
+	s->row++;
+	if (s->row == SX1509_MAX_ROWS) {
+		// back to the 0th row
+		s->row = 0;
+		// increment/wrap the debounce buffer index
+		s->idx++;
+		if (s->idx == SX1509_DEBOUNCE_COUNT) {
+			s->idx = 0;
 		}
 	}
+	sx1509_wr8(s, SX1509_DATA_A, ~(1 << s->row));
 }
 
 //-----------------------------------------------------------------------------
