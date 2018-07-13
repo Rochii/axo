@@ -1,0 +1,66 @@
+<objdefs appVersion="1.0.12">
+  <obj.normal id="key" uuid="c835e0fc-8311-48e3-b776-d962419e9711">
+    <sDescription>SX1509 Driver: key
+      8x8 keyboard matrix scanner</sDescription>
+    <author>Jason Harris</author>
+    <license>BSD</license>
+    <inlets/>
+    <outlets>
+      <int32 name="key"/>
+    </outlets>
+    <displays/>
+    <params/>
+    <attribs>
+      <combo name="adr">
+        <MenuEntries>
+          <string>0x3e</string>
+          <string>0x3f</string>
+          <string>0x70</string>
+          <string>0x71</string>
+        </MenuEntries>
+        <CEntries>
+          <string>0x3e</string>
+          <string>0x3f</string>
+          <string>0x70</string>
+          <string>0x71</string>
+        </CEntries>
+      </combo>
+    </attribs>
+    <includes>
+      <include>./sx1509.h</include>
+    </includes>
+    <depends>
+      <depend>I2CD1</depend>
+    </depends>
+    <code.declaration><![CDATA[// pin 0: key row 0
+    // pin 1: key row 1
+    // pin 2: key row 2
+    // pin 3: key row 3
+    // pin 4: key row 4
+    // pin 5: key row 5
+    // pin 6: key row 6
+    // pin 7: key row 7
+    // pin 8: key col 0
+    // pin 9: key col 1
+    // pin 10: key col 2
+    // pin 11: key col 3
+    // pin 12: key col 4
+    // pin 13: key col 5
+    // pin 14: key col 6
+    // pin 15: key col 7
+    const struct sx1509_cfg config[8] = {
+      {SX1509_CLOCK, 0x50},
+      {SX1509_MISC, 0x10},
+      {SX1509_DIR_A, 0x00},
+      {SX1509_OPEN_DRAIN_A, 0xff},
+      {SX1509_PULL_UP_B, 0xff},
+      {SX1509_DEBOUNCE_CONFIG, 0x03},
+      {SX1509_DEBOUNCE_ENABLE_B, 0xff},
+      {0xff, 0x00},
+    };
+    struct sx1509_state state;]]></code.declaration>
+    <code.init><![CDATA[sx1509_init(&state, &config[0], attr_adr);]]></code.init>
+    <code.dispose><![CDATA[sx1509_dispose(&state);]]></code.dispose>
+    <code.krate><![CDATA[sx1509_key(&state, &outlet_key);]]></code.krate>
+  </obj.normal>
+</objdefs>

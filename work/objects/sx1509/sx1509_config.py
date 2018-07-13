@@ -59,6 +59,7 @@ class sx1509(object):
     self.cols = 0
     self.row_bits = 0
     self.col_bits = 0
+    self.debounce = '4ms'
     self.cfg = []
     self.alloc = [None,] * _num_io_pins
 
@@ -80,13 +81,14 @@ class sx1509(object):
       s.append('// pin %d: %s' % (i, usage))
     return '\n'.join(s)
 
-  def key_scanning(self, rows, cols):
+  def key_scanning(self, rows, cols, debounce):
     """configure for key scanning"""
-    pr_error('bad key scan rows: %d' % rows, rows not in (2, 3, 4, 5, 6, 7, 8))
+    pr_error('bad key scan rows: %d' % rows, rows not in (1, 2, 3, 4, 5, 6, 7, 8))
     pr_error('bad key scan cols: %d' % cols, cols not in (1, 2, 3, 4, 5, 6, 7, 8))
     self.keys = True
     self.rows = rows
     self.cols = cols
+    self.debounce = debounce
     self.row_bits = (1 << rows) - 1
     self.col_bits = (1 << cols) - 1
     for i in range(self.rows):
@@ -188,11 +190,12 @@ class sx1509(object):
     self.DIR_B()
     self.PULL_UP_B()
     # input debouncing
-    self.DEBOUNCE_CONFIG('4ms')
+    self.DEBOUNCE_CONFIG(self.debounce)
     self.DEBOUNCE_ENABLE_B()
     # key configuration
-    self.KEY_CONFIG_1('1s', '8ms')
-    self.KEY_CONFIG_2()
+    # note: we are not using the hw based key scanning at this time 
+    #self.KEY_CONFIG_1('1s', '8ms')
+    #self.KEY_CONFIG_2()
     # terminate the register value list
     self.eol()
     s = []
@@ -212,7 +215,11 @@ class sx1509(object):
 
   def gen_description(self):
     """generate the description string"""
-    return 'SX1509 Driver: %s' % self.name
+    s = []
+    s.append('SX1509 Driver: %s' % self.name)
+    if self.keys:
+      s.append('  %dx%d keyboard matrix scanner' % (self.rows, self.cols))
+    return '\n'.join(s)
 
   def gen_includes(self):
     """generate the include file declaration"""
@@ -288,9 +295,9 @@ class sx1509(object):
 def main():
   """generate various sx1509 driver objects"""
 
-  # 4x4 key scanner
-  x = sx1509('key4x4', '409339ae-fd74-4d02-8caa-e1114d73706e')
-  x.key_scanning(4, 4)
+  # key scanner (8x8)
+  x = sx1509('key', 'c835e0fc-8311-48e3-b776-d962419e9711')
+  x.key_scanning(8, 8, '4ms')
   x.generate()
 
 
