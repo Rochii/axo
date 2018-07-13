@@ -9,7 +9,8 @@ https://www.sparkfun.com/products/13601
 http://cdn.sparkfun.com/datasheets/BreakoutBoards/sx1509.pdf
 
 Note:
-This object requires a single instance of the factory/gpio/i2c/config object.
+
+1) This object requires a single instance of the factory/gpio/i2c/config object.
 This allows multiple devices (each with a unique i2c address) to work concurrently.
 Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)
 
@@ -248,6 +249,24 @@ static int sx1509_reset(struct sx1509_state *s) {
 }
 
 //-----------------------------------------------------------------------------
+// locked access to the shared event variable
+
+// get the key event
+static uint32_t sx1509_get_event(struct sx1509_state *s) {
+	chSysLock();
+	uint32_t event = s->event;
+	chSysUnlock();
+	return event;
+}
+
+// set the key event
+static void sx1509_set_event(struct sx1509_state *s, uint32_t event) {
+	chSysLock();
+	s->event = event;
+	chSysUnlock();
+}
+
+//-----------------------------------------------------------------------------
 
 // count of trailing zeroes for uint64_t
 static int ctz64(uint64_t val) {
@@ -269,16 +288,9 @@ static void sx1509_key_event(struct sx1509_state *s, uint64_t bits, int event) {
 	int key;
 	while ((key = sx1509_getkey(&bits)) >= 0) {
 		// wait for the dsp thread to read the key event
-		uint32_t full;
-		do {
-			chSysLock();
-			full = s->event;
-			chSysUnlock();
-		} while (full);
-		// set the event
-		chSysLock();
-		s->event = (event << 16) | key;
-		chSysUnlock();
+		while (sx1509_get_event()) ;
+		// pass the new key event
+		sx1509_set_event(s, (event << 16) | key);
 	}
 }
 
@@ -312,6 +324,7 @@ static void sx1509_key_polling(struct sx1509_state *s) {
 			s->idx = 0;
 		}
 	}
+	// write the row selection bits
 	sx1509_wr8(s, SX1509_DATA_A, ~(1 << s->row));
 }
 
@@ -395,14 +408,10 @@ static void sx1509_dispose(struct sx1509_state *s) {
 
 // krate key function (the same for all object variants)
 static void sx1509_key(struct sx1509_state *s, int32_t * key) {
-	chSysLock();
-	uint32_t event = s->event;
-	chSysUnlock();
+	uint32_t event = sx1509_get_event(s);
 	if (event) {
 		// clear the event
-		chSysLock();
-		s->event = 0;
-		chSysUnlock();
+		sx1509_set_event(s, 0);
 		LogTextMessage("%08x", event);
 	}
 	*key = event;
