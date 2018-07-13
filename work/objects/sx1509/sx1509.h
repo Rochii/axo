@@ -182,11 +182,10 @@ struct sx1509_state {
 	uint64_t keys;		// current debounced key state
 	int idx;		// buffer index;
 	int row;		// current scan row;
+	uint32_t event;		// key event (shared across dsp/sx1509 threads)
 };
 
 //-----------------------------------------------------------------------------
-
-// TODO - size properly
 
 // Allocate a 32-bit aligned buffer of size bytes from sram2.
 // The memory pool is big enough for 4 concurrent devices.
@@ -269,11 +268,17 @@ static int sx1509_getkey(uint64_t * val) {
 static void sx1509_key_event(struct sx1509_state *s, uint64_t bits, int event) {
 	int key;
 	while ((key = sx1509_getkey(&bits)) >= 0) {
-		if (event == SX1509_EVENT_KEYDN) {
-			LogTextMessage("keydn %d", key);
-		} else {
-			LogTextMessage("keyup %d", key);
-		}
+		// wait for the dsp thread to read the key event
+		uint32_t full;
+		do {
+			chSysLock();
+			full = s->event;
+			chSysUnlock();
+		} while (full);
+		// set the event
+		chSysLock();
+		s->event = (event << 16) | key;
+		chSysUnlock();
 	}
 }
 
@@ -390,6 +395,17 @@ static void sx1509_dispose(struct sx1509_state *s) {
 
 // krate key function (the same for all object variants)
 static void sx1509_key(struct sx1509_state *s, int32_t * key) {
+	chSysLock();
+	uint32_t event = s->event;
+	chSysUnlock();
+	if (event) {
+		// clear the event
+		chSysLock();
+		s->event = 0;
+		chSysUnlock();
+		LogTextMessage("%08x", event);
+	}
+	*key = event;
 }
 
 //-----------------------------------------------------------------------------

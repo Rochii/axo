@@ -9,7 +9,16 @@
          <combo attributeName="adr" selection="0x3e"/>
       </attribs>
    </obj>
-   <nets/>
+   <obj type="disp/ibar 64" uuid="6a7095211c4dc70b413bac91cc3a803c2e869a61" name="ibar_1" x="196" y="98">
+      <params/>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="key4x4_1" outlet="key"/>
+         <dest obj="ibar_1" inlet="in"/>
+      </net>
+   </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
