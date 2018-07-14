@@ -1,37 +1,25 @@
 <objdefs appVersion="1.0.12">
-  <obj.normal id="monitor" uuid="8c092f40-46e0-47f1-b634-a1d05a682cf5">
-
-    <sDescription>key monitor</sDescription>
-
-    <author>Jason Harris</author>
-
-    <license>BSD</license>
-
-    <inlets>
-      <int32 name="key"/>
-    </inlets>
-
-    <outlets>
-      <int32 name="key"/>
-    </outlets>
-
-    <displays/>
-
-    <params/>
-
-    <attribs/>
-
-    <includes/>
-
-    <depends/>
-
-    <code.declaration><![CDATA[]]></code.declaration>
-
-    <code.init><![CDATA[]]></code.init>
-
-    <code.dispose><![CDATA[]]></code.dispose>
-
-    <code.krate><![CDATA[]]></code.krate>
-
-  </obj.normal>
+   <obj.normal id="monitor" uuid="8c092f40-46e0-47f1-b634-a1d05a682cf5">
+      <sDescription>key monitor</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets>
+         <int32 name="key"/>
+      </inlets>
+      <outlets/>
+      <displays/>
+      <params/>
+      <attribs/>
+      <code.krate><![CDATA[if (inlet_key) {
+	uint16_t key = inlet_key;	
+	switch(inlet_key >> 16) {
+		case 1:
+			LogTextMessage("key dn %d", key);
+			break;
+		case 2:
+			LogTextMessage("key up %d", key);
+			break;
+	}
+}]]></code.krate>
+   </obj.normal>
 </objdefs>

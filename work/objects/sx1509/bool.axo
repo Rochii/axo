@@ -1,0 +1,42 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="bool" uuid="5df6dd0f-72b4-4696-bf6f-293df376a81b">
+      <sDescription>key to boolean</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets>
+         <int32 name="key"/>
+      </inlets>
+      <outlets>
+         <bool32 name="o0"/>
+         <bool32 name="o1"/>
+         <bool32 name="o2"/>
+         <bool32 name="o3"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs>
+         <spinner name="k0" MinValue="0" MaxValue="63" DefaultValue="0"/>
+         <spinner name="k1" MinValue="0" MaxValue="63" DefaultValue="1"/>
+         <spinner name="k2" MinValue="0" MaxValue="63" DefaultValue="2"/>
+         <spinner name="k3" MinValue="0" MaxValue="63" DefaultValue="3"/>
+      </attribs>
+      <code.declaration><![CDATA[uint64_t state;]]></code.declaration>
+      <code.init><![CDATA[state = 0;]]></code.init>
+      <code.krate><![CDATA[if (inlet_key) {
+	uint32_t key = inlet_key;
+	switch (inlet_key >> 16) {
+		case 1:
+			state |= (1ULL << key);
+			break;
+		case 2:
+			state &= ~(1ULL << key);
+			break;
+	}
+}
+
+outlet_o0 = state & (1ULL << attr_k0);
+outlet_o1 = state & (1ULL << attr_k1);
+outlet_o2 = state & (1ULL << attr_k2);
+outlet_o3 = state & (1ULL << attr_k3);]]></code.krate>
+   </obj.normal>
+</objdefs>

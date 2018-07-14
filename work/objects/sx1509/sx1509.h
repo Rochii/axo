@@ -288,7 +288,7 @@ static void sx1509_key_event(struct sx1509_state *s, uint64_t bits, int event) {
 	int key;
 	while ((key = sx1509_getkey(&bits)) >= 0) {
 		// wait for the dsp thread to read the key event
-		while (sx1509_get_event()) ;
+		while (sx1509_get_event(s)) ;
 		// pass the new key event
 		sx1509_set_event(s, (event << 16) | key);
 	}
@@ -349,7 +349,7 @@ static THD_FUNCTION(sx1509_thread, arg) {
 	int rc = 0;
 	int idx = 0;
 
-	sx1509_info(s, "starting thread");
+	//sx1509_info(s, "starting thread");
 
 	// allocate i2c buffers
 	s->tx = (uint8_t *) sx1509_malloc(2);
@@ -384,7 +384,7 @@ static THD_FUNCTION(sx1509_thread, arg) {
 	}
 
  exit:
-	sx1509_info(s, "stopping thread");
+	//sx1509_info(s, "stopping thread");
 	chThdExit((msg_t) 0);
 }
 
@@ -412,7 +412,6 @@ static void sx1509_key(struct sx1509_state *s, int32_t * key) {
 	if (event) {
 		// clear the event
 		sx1509_set_event(s, 0);
-		LogTextMessage("%08x", event);
 	}
 	*key = event;
 }

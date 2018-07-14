@@ -1,38 +1,38 @@
 <objdefs appVersion="1.0.12">
-  <obj.normal id="key" uuid="c835e0fc-8311-48e3-b776-d962419e9711">
-    <sDescription>SX1509 Driver: key
+   <obj.normal id="key" uuid="c835e0fc-8311-48e3-b776-d962419e9711">
+      <sDescription>SX1509 Driver: key
       8x8 keyboard matrix scanner</sDescription>
-    <author>Jason Harris</author>
-    <license>BSD</license>
-    <inlets/>
-    <outlets>
-      <int32 name="key"/>
-    </outlets>
-    <displays/>
-    <params/>
-    <attribs>
-      <combo name="adr">
-        <MenuEntries>
-          <string>0x3e</string>
-          <string>0x3f</string>
-          <string>0x70</string>
-          <string>0x71</string>
-        </MenuEntries>
-        <CEntries>
-          <string>0x3e</string>
-          <string>0x3f</string>
-          <string>0x70</string>
-          <string>0x71</string>
-        </CEntries>
-      </combo>
-    </attribs>
-    <includes>
-      <include>./sx1509.h</include>
-    </includes>
-    <depends>
-      <depend>I2CD1</depend>
-    </depends>
-    <code.declaration><![CDATA[// pin 0: key row 0
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets>
+         <int32 name="key"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs>
+         <combo name="adr">
+            <MenuEntries>
+               <string>0x3e</string>
+               <string>0x3f</string>
+               <string>0x70</string>
+               <string>0x71</string>
+            </MenuEntries>
+            <CEntries>
+               <string>0x3e</string>
+               <string>0x3f</string>
+               <string>0x70</string>
+               <string>0x71</string>
+            </CEntries>
+         </combo>
+      </attribs>
+      <includes>
+         <include>./sx1509.h</include>
+      </includes>
+      <depends>
+         <depend>I2CD1</depend>
+      </depends>
+      <code.declaration><![CDATA[// pin 0: key row 0
     // pin 1: key row 1
     // pin 2: key row 2
     // pin 3: key row 3
@@ -54,13 +54,13 @@
       {SX1509_DIR_A, 0x00},
       {SX1509_OPEN_DRAIN_A, 0xff},
       {SX1509_PULL_UP_B, 0xff},
-      {SX1509_DEBOUNCE_CONFIG, 0x03},
-      {SX1509_DEBOUNCE_ENABLE_B, 0xff},
+      //{SX1509_DEBOUNCE_CONFIG, 0x03},
+      //{SX1509_DEBOUNCE_ENABLE_B, 0xff},
       {0xff, 0x00},
     };
     struct sx1509_state state;]]></code.declaration>
-    <code.init><![CDATA[sx1509_init(&state, &config[0], attr_adr);]]></code.init>
-    <code.dispose><![CDATA[sx1509_dispose(&state);]]></code.dispose>
-    <code.krate><![CDATA[sx1509_key(&state, &outlet_key);]]></code.krate>
-  </obj.normal>
+      <code.init><![CDATA[sx1509_init(&state, &config[0], attr_adr);]]></code.init>
+      <code.dispose><![CDATA[sx1509_dispose(&state);]]></code.dispose>
+      <code.krate><![CDATA[sx1509_key(&state, &outlet_key);]]></code.krate>
+   </obj.normal>
 </objdefs>
