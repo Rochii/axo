@@ -1,0 +1,25 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="strum" uuid="35eb71a3-4f1e-4d5e-a950-78333064691c">
+      <sDescription>Autoharp Strummer</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets>
+         <int32 name="key"/>
+         <int32 name="touch"/>
+      </inlets>
+      <outlets/>
+      <displays/>
+      <params/>
+      <attribs/>
+      <includes>
+         <include>./strum.h</include>
+      </includes>
+      <code.declaration><![CDATA[const struct strum_cfg config = {
+	.touch_bits = 12,
+};
+
+struct strum_state state;]]></code.declaration>
+      <code.init><![CDATA[strum_init(&state, &config);]]></code.init>
+      <code.krate><![CDATA[strum_krate(&state, inlet_key, inlet_touch);]]></code.krate>
+   </obj.normal>
+</objdefs>

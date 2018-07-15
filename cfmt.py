@@ -12,6 +12,7 @@ src_dirs = (
   'work/objects/rei2c',
   'work/objects/adxl345',
   'work/objects/hmc5883l',
+  'work/objects/input',
   'work/objects/itg3200',
   'repos/axoloti-contrib/objects/deadsy/mpr121',
   'repos/axoloti-contrib/objects/deadsy/ttp229',
