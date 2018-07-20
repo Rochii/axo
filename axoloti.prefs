@@ -3,7 +3,7 @@
    <PollInterval>50</PollInterval>
    <MouseDialAngular>false</MouseDialAngular>
    <MouseDoNotRecenterWhenAdjustingControls>false</MouseDoNotRecenterWhenAdjustingControls>
-   <ExpertMode>false</ExpertMode>
+   <ExpertMode>true</ExpertMode>
    <recentFiles/>
    <RuntimeDir>/home/jasonh/work/axo/axoloti</RuntimeDir>
    <FirmwareDir>/home/jasonh/work/axo/axoloti/firmware</FirmwareDir>
