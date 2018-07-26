@@ -13,6 +13,14 @@ http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf
 #define DEADSY_ADXL345_H
 
 //-----------------------------------------------------------------------------
+
+#if CH_KERNEL_MAJOR == 2
+#define THD_WORKING_AREA_SIZE THD_WA_SIZE
+#define MSG_OK RDY_OK
+#define THD_FUNCTION(tname, arg) msg_t tname(void *arg)
+#endif
+
+//-----------------------------------------------------------------------------
 // registers
 
 #define I2C_ADR_ADXL345 0x53
@@ -69,29 +77,6 @@ struct adxl345_cfg {
 	uint8_t val;
 };
 
-static struct adxl345_cfg config[] = {
-	  {ADXL345_TAP_THRESH, 0},
-	  {ADXL345_OFSX, 0},
-	  {ADXL345_OFSY, 0},
-	  {ADXL345_OFSZ, 0},
-	  {ADXL345_TAP_DUR, 0},
-	  {ADXL345_TAP_LATENT, 0},
-	  {ADXL345_TAP_WINDOW, 0},
-	  {ADXL345_THRESH_ACT, 0},
-	  {ADXL345_THRESH_INACT, 0},
-	  {ADXL345_TIME_INACT, 0},
-	  {ADXL345_ACT_INACT_CTL, 0},
-	  {ADXL345_THRESH_FF, 0},
-	  {ADXL345_TIME_FF, 0},
-	  {ADXL345_TAP_AXES, 0},
-	  {ADXL345_BW_RATE, BW_RATE_50},
-	  {ADXL345_POWER_CTL, (1 << 3 /*measure */ )},
-	  {ADXL345_INT_ENABLE, 0},
-	  {ADXL345_INT_MAP, 0},
-	  {ADXL345_DATA_FORMAT, 0},
-	  {ADXL345_FIFO_CTL, (2 << 6 /*stream */ )},
-};
-
 // adxl345 state variables
 struct adxl345_state {
 	stkalign_t thd_wa[THD_WORKING_AREA_SIZE(512) / sizeof(stkalign_t)];	// thread working area
@@ -101,7 +86,7 @@ struct adxl345_state {
 	i2caddr_t adr;		// i2c device address
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
-	int32_t x, y, z;		// acceleration vector (shared across dsp/adxl345 thread)
+	int32_t x, y, z;	// acceleration vector (shared across dsp/adxl345 thread)
 };
 
 //-----------------------------------------------------------------------------
@@ -146,11 +131,13 @@ static int adxl345_wr8(struct adxl345_state *s, uint8_t reg, uint8_t val) {
 	return (rc == MSG_OK) ? 0 : -1;
 }
 
+//-----------------------------------------------------------------------------
+
 // read the accelerometer data
 static int adxl345_rd_accel(struct adxl345_state *s) {
 	// read 6 bytes starting at the DATAX0 register.
 
-	s->tx[0] = DATAX0;
+	s->tx[0] = ADXL345_DATAX0;
 	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 6, ADXL345_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
@@ -158,35 +145,21 @@ static int adxl345_rd_accel(struct adxl345_state *s) {
 	if (rc != MSG_OK) {
 		return -1;
 	}
-
 	// TODO unit conversion
-	s->x = *(uint16_t *)&s->rx[0];
-	s->y = *(uint16_t *)&s->rx[2];
-	s->z = *(uint16_t *)&s->rx[4];
-
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-
-
-int accel_init(void) {
-	// do we have a device on the bus?
-	uint8_t tmp;
-	if (i2c_read(I2C_ADR_ADXL345, &tmp, 1) != 0) {
-		return -1;
-	}
-	// read and check the device id register
-	if (accel_reg_rd(DEVID) != 0xe5) {
-		return -1;
-	}
+	chSysLock();
+	s->x = *(uint16_t *) & s->rx[0];
+	s->y = *(uint16_t *) & s->rx[2];
+	s->z = *(uint16_t *) & s->rx[4];
+	chSysUnlock();
 
 	return 0;
 }
 
 // return non-zero if a new accelerometer sample is available
-int accel_poll(void) {
-	return accel_reg_rd(FIFO_STATUS) & 0x3f;
+static int adxl345_poll(struct adxl345_state *s) {
+	uint8_t val;
+	adxl345_rd8(s, ADXL345_FIFO_STATUS, &val);
+	return val & 0x3f;
 }
 
 //-----------------------------------------------------------------------------
@@ -208,7 +181,7 @@ static THD_FUNCTION(adxl345_thread, arg) {
 	int rc = 0;
 	int idx = 0;
 
-	//adxl345_info(s, "starting thread");
+	adxl345_info(s, "starting thread");
 
 	// allocate i2c buffers
 	s->tx = (uint8_t *) adxl345_malloc(2);
@@ -217,7 +190,6 @@ static THD_FUNCTION(adxl345_thread, arg) {
 		adxl345_error(s, "out of memory");
 		goto exit;
 	}
-
 
 	uint8_t val;
 	rc = adxl345_rd8(s, ADXL345_DEVID, &val);
@@ -229,30 +201,23 @@ static THD_FUNCTION(adxl345_thread, arg) {
 		adxl345_error(s, "bad device id");
 		goto exit;
 	}
-
 	// apply the per-object register configuration
 	while (s->cfg[idx].reg != 0xff) {
 		adxl345_wr8(s, s->cfg[idx].reg, s->cfg[idx].val);
 		idx += 1;
 	}
 
-
-
-
 	// poll for the changing touch status
 	while (!chThdShouldTerminate()) {
-		uint16_t val;
-		// read the touch status
-		adxl345_rd16(s, MPR121_TOUCH_STATUS_L, &val);
-		val &= 0xfff;
-		chSysLock();
-		s->touch = val;
-		chSysUnlock();
+		if (adxl345_poll(s)) {
+			adxl345_rd_accel(s);
+		}
+		// TODO - tune loop time
 		chThdSleepMilliseconds(10);
 	}
 
  exit:
-	//adxl345_info(s, "stopping thread");
+	adxl345_info(s, "stopping thread");
 	chThdExit((msg_t) 0);
 }
 
@@ -275,7 +240,7 @@ static void adxl345_dispose(struct adxl345_state *s) {
 }
 
 // return the current acceleration vector
-static void adxl345_krate(struct adxl345_state *s, int32_t * x, int32_t * y, int32_t * z ) {
+static void adxl345_krate(struct adxl345_state *s, int32_t * x, int32_t * y, int32_t * z) {
 	chSysLock();
 	*x = s->x;
 	*y = s->y;

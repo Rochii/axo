@@ -37,7 +37,27 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
       <depends>
          <depend>I2CD1</depend>
       </depends>
-      <code.declaration><![CDATA[const struct adxl345_cfg config[1] = {
+      <code.declaration><![CDATA[const struct adxl345_cfg config[21] = {
+  {ADXL345_TAP_THRESH, 0},
+  {ADXL345_OFSX, 0},
+  {ADXL345_OFSY, 0},
+  {ADXL345_OFSZ, 0},
+  {ADXL345_TAP_DUR, 0},
+  {ADXL345_TAP_LATENT, 0},
+  {ADXL345_TAP_WINDOW, 0},
+  {ADXL345_THRESH_ACT, 0},
+  {ADXL345_THRESH_INACT, 0},
+  {ADXL345_TIME_INACT, 0},
+  {ADXL345_ACT_INACT_CTL, 0},
+  {ADXL345_THRESH_FF, 0},
+  {ADXL345_TIME_FF, 0},
+  {ADXL345_TAP_AXES, 0},
+  {ADXL345_BW_RATE, BW_RATE_50},
+  {ADXL345_POWER_CTL, (1 << 3 /*measure*/ )},
+  {ADXL345_INT_ENABLE, 0},
+  {ADXL345_INT_MAP, 0},
+  {ADXL345_DATA_FORMAT, 0},
+  {ADXL345_FIFO_CTL, (2 << 6 /*stream*/ )},
   {0xff, 0} // end-of-list
 };
 
