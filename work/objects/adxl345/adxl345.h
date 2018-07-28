@@ -23,8 +23,6 @@ http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf
 //-----------------------------------------------------------------------------
 // registers
 
-#define I2C_ADR_ADXL345 0x53
-
 #define ADXL345_DEVID             0x00	// R   Device ID
 #define ADXL345_TAP_THRESH        0x1D	// R/W Tap threshold
 #define ADXL345_OFSX              0x1E	// R/W X-axis offset
@@ -178,8 +176,8 @@ static void adxl345_error(struct adxl345_state *s, const char *msg) {
 
 static THD_FUNCTION(adxl345_thread, arg) {
 	struct adxl345_state *s = (struct adxl345_state *)arg;
-	int rc = 0;
 	int idx = 0;
+	int rc = 0;
 
 	adxl345_info(s, "starting thread");
 
@@ -207,7 +205,7 @@ static THD_FUNCTION(adxl345_thread, arg) {
 		idx += 1;
 	}
 
-	// poll for the changing touch status
+	// poll for the changing accelerometer status
 	while (!chThdShouldTerminate()) {
 		if (adxl345_poll(s)) {
 			adxl345_rd_accel(s);

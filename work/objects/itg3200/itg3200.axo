@@ -1,0 +1,53 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="itg3200" uuid="bf918bb9-a0c4-4ade-a0bd-9fe9a4347386">
+      <sDescription>ITG-3200 3 Axis Gyroscope Driver (I2C).
+
+This object requires a single instance of the factory/gpio/i2c/config object.
+This allows multiple devices (each with a unique i2c address) to work concurrently.
+Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets>
+         <int32 name="x"/>
+         <int32 name="y"/>
+         <int32 name="z"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs>
+         <combo name="adr">
+            <MenuEntries>
+               <string>0x68</string>
+               <string>0x69</string>
+            </MenuEntries>
+            <CEntries>
+               <string>0x68</string>
+               <string>0x69</string>
+            </CEntries>
+         </combo>
+      </attribs>
+      <includes>
+         <include>./itg3200.h</include>
+      </includes>
+      <depends>
+         <depend>I2CD1</depend>
+      </depends>
+      <code.declaration><![CDATA[// 50 Hz sample rate
+// 1000 Hz ADC sample rate
+// 98Hz low pass filter cutoff
+
+const struct itg3200_cfg config[5] = {
+  {ITG3200_SMPLRT_DIV, SMPLRT(1000, 50) /*SMPLRT_DIV*/},
+  {ITG3200_DLPF_FS, (3 << 3 /*FS_SEL*/ ) | (DLP_CFG_20Hz_1kHz << 0 /*DLPF_CFG*/)},
+  {ITG3200_INT_CFG, (1 << 0 /*RAW_RDY_EN*/ )},
+  {ITG3200_PWR_MGM, (1 << 0 /*CLK_SEL*/ )},
+  {0xff, 0} // end-of-list
+};
+
+struct itg3200_state state;]]></code.declaration>
+      <code.init><![CDATA[itg3200_init(&state, &config[0], attr_adr);]]></code.init>
+      <code.dispose><![CDATA[itg3200_dispose(&state);]]></code.dispose>
+      <code.krate><![CDATA[itg3200_krate(&state, &outlet_x, &outlet_y, &outlet_z);]]></code.krate>
+   </obj.normal>
+</objdefs>
