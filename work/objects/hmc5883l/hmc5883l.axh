@@ -3,11 +3,9 @@
       <params/>
       <attribs/>
    </obj>
-   <obj type="adxl345/adxl345" uuid="1b1176c3-3dbd-4bf2-b813-6e486363be56" name="adxl345_1" x="14" y="56">
+   <obj type="hmc5883l/hmc5883l" uuid="558dfbc0-184c-46bf-93dc-588a45d75218" name="hmc5883l_1" x="14" y="56">
       <params/>
-      <attribs>
-         <combo attributeName="adr" selection="0x5a"/>
-      </attribs>
+      <attribs/>
    </obj>
    <nets/>
    <settings>
@@ -15,8 +13,8 @@
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>638</x>
-      <y>137</y>
+      <x>793</x>
+      <y>129</y>
       <width>1065</width>
       <height>742</height>
    </windowPos>

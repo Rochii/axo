@@ -1,6 +1,6 @@
 <objdefs appVersion="1.0.12">
    <obj.normal id="hmc5883l" uuid="558dfbc0-184c-46bf-93dc-588a45d75218">
-      <sDescription>ADXL345 Accelerometer Driver (I2C).
+      <sDescription>HMC5883L Digital Compass Driver (I2C).
 
 This object requires a single instance of the factory/gpio/i2c/config object.
 This allows multiple devices (each with a unique i2c address) to work concurrently.
@@ -15,54 +15,22 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
       </outlets>
       <displays/>
       <params/>
-      <attribs>
-         <combo name="adr">
-            <MenuEntries>
-               <string>0x5a</string>
-               <string>0x5b</string>
-               <string>0x5c</string>
-               <string>0x5d</string>
-            </MenuEntries>
-            <CEntries>
-               <string>0x5a</string>
-               <string>0x5b</string>
-               <string>0x5c</string>
-               <string>0x5d</string>
-            </CEntries>
-         </combo>
-      </attribs>
+      <attribs/>
       <includes>
          <include>./hmc5883l.h</include>
       </includes>
       <depends>
          <depend>I2CD1</depend>
       </depends>
-      <code.declaration><![CDATA[const struct hmc5883l_cfg config[21] = {
-  {ADXL345_TAP_THRESH, 0},
-  {ADXL345_OFSX, 0},
-  {ADXL345_OFSY, 0},
-  {ADXL345_OFSZ, 0},
-  {ADXL345_TAP_DUR, 0},
-  {ADXL345_TAP_LATENT, 0},
-  {ADXL345_TAP_WINDOW, 0},
-  {ADXL345_THRESH_ACT, 0},
-  {ADXL345_THRESH_INACT, 0},
-  {ADXL345_TIME_INACT, 0},
-  {ADXL345_ACT_INACT_CTL, 0},
-  {ADXL345_THRESH_FF, 0},
-  {ADXL345_TIME_FF, 0},
-  {ADXL345_TAP_AXES, 0},
-  {ADXL345_BW_RATE, BW_RATE_50},
-  {ADXL345_POWER_CTL, (1 << 3 /*measure*/ )},
-  {ADXL345_INT_ENABLE, 0},
-  {ADXL345_INT_MAP, 0},
-  {ADXL345_DATA_FORMAT, 0},
-  {ADXL345_FIFO_CTL, (2 << 6 /*stream*/ )},
+      <code.declaration><![CDATA[const struct hmc5883l_cfg config[4] = {
+  {HMC5883L_CFG_REG_A, COMPASS_RATE_15 << 2 /*Hz */},
+  {HMC5883L_CFG_REG_B, 1 << 5 /*gain */},
+  {HMC5883L_MODE_REG, 0 << 0 /*continuous mode */},
   {0xff, 0} // end-of-list
 };
 
 struct hmc5883l_state state;]]></code.declaration>
-      <code.init><![CDATA[hmc5883l_init(&state, &config[0], attr_adr);]]></code.init>
+      <code.init><![CDATA[hmc5883l_init(&state, &config[0]);]]></code.init>
       <code.dispose><![CDATA[hmc5883l_dispose(&state);]]></code.dispose>
       <code.krate><![CDATA[hmc5883l_krate(&state, &outlet_x, &outlet_y, &outlet_z);]]></code.krate>
    </obj.normal>
