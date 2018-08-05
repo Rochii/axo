@@ -45,7 +45,7 @@ Author: Jason Harris (https://github.com/deadsy)
 
 #define HMC5883L_I2C_TIMEOUT 30	// chibios ticks
 
-#define HMC5883L_I2C_ADR 0x1e
+#define HMC5883L_I2C_ADR 0x1e	// only a single i2c address :-(
 
 //-----------------------------------------------------------------------------
 

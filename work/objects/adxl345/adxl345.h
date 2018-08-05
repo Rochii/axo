@@ -67,6 +67,8 @@ http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf
 
 #define ADXL345_I2C_TIMEOUT 30	// chibios ticks
 
+#define ADXL345_SCALE (float)(4e-3)	// 4 mg/LSB
+
 //-----------------------------------------------------------------------------
 
 // adxl345 configuration
@@ -84,13 +86,21 @@ struct adxl345_state {
 	i2caddr_t adr;		// i2c device address
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
-	int32_t x, y, z;	// acceleration vector (shared across dsp/adxl345 thread)
+	float x, y, z;		// acceleration vector (shared across dsp/adxl345 thread)
 };
 
 //-----------------------------------------------------------------------------
 
+// convert a float to q11.21
+static int32_t float_to_q21(float f) {
+	__ASM volatile ("VCVT.S32.F32 %0, %0, 21":"+w" (f));
+	return *(int32_t *) (&f);
+}
+
+//-----------------------------------------------------------------------------
+
 // Allocate a 32-bit aligned buffer of size bytes from sram2.
-// The memory pool is big enough for 4 concurrent devices.
+// The memory pool is big enough for 2 concurrent devices.
 static void *adxl345_malloc(size_t size) {
 	static uint8_t pool[32] __attribute__ ((section(".sram2")));
 	static uint32_t free = 0;
@@ -134,22 +144,24 @@ static int adxl345_wr8(struct adxl345_state *s, uint8_t reg, uint8_t val) {
 // read the accelerometer data
 static int adxl345_rd_accel(struct adxl345_state *s) {
 	// read 6 bytes starting at the DATAX0 register.
-
 	s->tx[0] = ADXL345_DATAX0;
 	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 6, ADXL345_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
-
 	if (rc != MSG_OK) {
 		return -1;
 	}
-	// TODO unit conversion
-	chSysLock();
-	s->x = *(uint16_t *) & s->rx[0];
-	s->y = *(uint16_t *) & s->rx[2];
-	s->z = *(uint16_t *) & s->rx[4];
-	chSysUnlock();
 
+	float x = (float)((int16_t) ((s->rx[1] << 8) | s->rx[0])) * ADXL345_SCALE;
+	float y = (float)((int16_t) ((s->rx[3] << 8) | s->rx[2])) * ADXL345_SCALE;
+	float z = (float)((int16_t) ((s->rx[5] << 8) | s->rx[4])) * ADXL345_SCALE;
+
+	// copy to the shared variables
+	chSysLock();
+	s->x = x;
+	s->y = y;
+	s->z = z;
+	chSysUnlock();
 	return 0;
 }
 
@@ -179,7 +191,7 @@ static THD_FUNCTION(adxl345_thread, arg) {
 	int idx = 0;
 	int rc = 0;
 
-	adxl345_info(s, "starting thread");
+	//adxl345_info(s, "starting thread");
 
 	// allocate i2c buffers
 	s->tx = (uint8_t *) adxl345_malloc(2);
@@ -210,12 +222,12 @@ static THD_FUNCTION(adxl345_thread, arg) {
 		if (adxl345_poll(s)) {
 			adxl345_rd_accel(s);
 		}
-		// TODO - tune loop time
-		chThdSleepMilliseconds(10);
+		// loop time is based on the BW_RATE setting
+		chThdSleepMilliseconds(20);
 	}
 
  exit:
-	adxl345_info(s, "stopping thread");
+	//adxl345_info(s, "stopping thread");
 	chThdExit((msg_t) 0);
 }
 
@@ -238,12 +250,18 @@ static void adxl345_dispose(struct adxl345_state *s) {
 }
 
 // return the current acceleration vector
-static void adxl345_krate(struct adxl345_state *s, int32_t * x, int32_t * y, int32_t * z) {
+static void adxl345_krate(struct adxl345_state *s, int32_t * xi, int32_t * yi, int32_t * zi) {
+	float x, y, z;
+
 	chSysLock();
-	*x = s->x;
-	*y = s->y;
-	*z = s->z;
+	x = s->x;
+	y = s->y;
+	z = s->z;
 	chSysUnlock();
+
+	*xi = (int32_t) (x * 32.f);	//float_to_q27(x);
+	*yi = (int32_t) (y * 32.f);	//float_to_q27(y);
+	*zi = (int32_t) (z * 32.f);	//float_to_q27(z);
 }
 
 //-----------------------------------------------------------------------------

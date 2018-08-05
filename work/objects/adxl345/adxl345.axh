@@ -3,20 +3,45 @@
       <params/>
       <attribs/>
    </obj>
-   <obj type="adxl345/adxl345" uuid="1b1176c3-3dbd-4bf2-b813-6e486363be56" name="adxl345_1" x="14" y="56">
+   <obj type="adxl345/adxl345" uuid="1b1176c3-3dbd-4bf2-b813-6e486363be56" name="adxl345_1" x="14" y="70">
       <params/>
       <attribs>
-         <combo attributeName="adr" selection="0x5a"/>
+         <combo attributeName="adr" selection="0x53"/>
       </attribs>
    </obj>
-   <nets/>
+   <obj type="disp/chart b" uuid="d2bdf496f96ee521628490a038411210fbe29b15" name="chart_1" x="126" y="70">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/chart b" uuid="d2bdf496f96ee521628490a038411210fbe29b15" name="chart_2" x="196" y="70">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/chart b" uuid="d2bdf496f96ee521628490a038411210fbe29b15" name="chart_3" x="266" y="70">
+      <params/>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="adxl345_1" outlet="x"/>
+         <dest obj="chart_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="adxl345_1" outlet="y"/>
+         <dest obj="chart_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="adxl345_1" outlet="z"/>
+         <dest obj="chart_3" inlet="in"/>
+      </net>
+   </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>638</x>
-      <y>137</y>
+      <x>734</x>
+      <y>129</y>
       <width>1065</width>
       <height>742</height>
    </windowPos>
