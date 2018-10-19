@@ -1,0 +1,70 @@
+@SmashedTransistors wrote: 
+> Maybe it is a good idea to start a new thread about "tips and good practices for I2C objects".
+
+Ok. I'll bite.
+Here's my take on the issues.
+BTW- I'm broadly ignorant about many things, so feel free to comment/contribute.
+
+I2C is a shared bus technology.
+[https://en.wikipedia.org/wiki/I%C2%B2C](https://en.wikipedia.org/wiki/I%C2%B2C)
+
+Lot's of interesting chips have an I2C interface and the Axoloti provides an I2C bus on it's IO pins.
+If you have an I2C device you want to hook up, you may need to write an I2C driver/object to control it.
+
+I2C is a *shared* bus.
+
+The Axoloti is the bus master.
+Each device is a bus slave.
+There can be multiple slaves (each with a unique 7-bit I2C address).
+The Axoloti initiates the bus transaction (read/write) and the slave devices respond (hopefully).
+Each device is controlled by it's own driver.
+The device drivers are written by different people, so here are some best practices to ensure drivers play well together on the same I2C bus.
+
+1) Provide a way for the user to specify a unique device address.
+
+When the master (Axoloti) starts a transation on the bus, it indicates which device it wants to talk to by using a 7-bit I2C address.
+The master wants to talk to one device at a time, so each device needs a unique I2C address.
+The device datasheet will tell you which addresses it can use.
+The device will often have some hardware pins that let you specify some bits of the address.
+This allows the user to have multiple instances of the same device on the bus, each with a unique address.
+The driver writer needs to provide a way to specify which device address the driver should be using.
+
+The device address needs to be specified at compile time.
+On Axoloti this can be handled by an attribute in the driver:
+
+      <attribs>
+         <combo name="adr">
+            <MenuEntries>
+               <string>0x1d</string>
+               <string>0x53</string>
+            </MenuEntries>
+            <CEntries>
+               <string>0x1d</string>
+               <string>0x53</string>
+            </CEntries>
+         </combo>
+      </attribs>
+
+2) Initialise the I2C bus only once.
+
+3) Device IO operations should be in their own thread.
+
+Axoloti uses ChibiOS which is a multi-threaded RTOS.
+The DSP thread hooks into the krate/srate functions of the patch and computes the audio.
+The DSP thread needs to run as quickly as possible so it can feed the codec.
+So: The DSP thread should not be waiting around for external IO to take place.
+So: The I2C bus operations should be run in their own thread where they can run asynchronously without messing up the DSP thread.
+
+
+Because Axoloti uses ChibiOS, the drivers will try to access the bus at the same time, so we have to make sure the access is properly shared.
+
+4) Lock/Unlock the I2C bus around bus operations.
+
+5) Lock shared memory access bewteen DSP and IO threads.
+
+Examples:
+
+
+
+
+
