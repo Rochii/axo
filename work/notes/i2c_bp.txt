@@ -2,7 +2,7 @@
 > Maybe it is a good idea to start a new thread about "tips and good practices for I2C objects".
 
 Ok. I'll bite.
-Here's my take on the issues.
+Here's my take on writing I2C drivers for Axoloti.
 BTW- I'm broadly ignorant about many things, so feel free to comment/contribute.
 
 I2C is a shared bus technology.
@@ -23,14 +23,14 @@ The device drivers are written by different people, so here are some best practi
 1) Provide a way for the user to specify a unique device address.
 
 When the master (Axoloti) starts a transation on the bus, it indicates which device it wants to talk to by using a 7-bit I2C address.
-The master wants to talk to one device at a time, so each device needs a unique I2C address.
-The device datasheet will tell you which addresses it can use.
-The device will often have some hardware pins that let you specify some bits of the address.
+The master talks to one device at a time, so each device needs a unique I2C address.
+The device datasheet will tell you which addresses a specific device can use.
+The device will often have some hardware pins that specify some bits of the address.
 This allows the user to have multiple instances of the same device on the bus, each with a unique address.
-The driver writer needs to provide a way to specify which device address the driver should be using.
+The driver writer needs to provide a way to specify which device address a driver should be using.
 
 The device address needs to be specified at compile time.
-On Axoloti this can be handled by an attribute in the driver:
+On Axoloti this can be handled by an attribute in the object:
 
       <attribs>
          <combo name="adr">
@@ -47,22 +47,61 @@ On Axoloti this can be handled by an attribute in the driver:
 
 2) Initialise the I2C bus only once.
 
+The I2C bus needs to be initialised in the patch.
+A given patch might control multiple I2C devices, but the I2C bus should only be initialised once.
+The bus is initialised by a call to the i2cStart() function.
+This should *not* be called within the driver because with multiple devices you would get multiple calls to initialise the bus.
+It should be called through a single instance of the i2c config object.
+
+axoloti-factory/objects/gpio/i2c/config.axo
+
+This object does not connect to anything, it just handles the IO setup and shutdown for the I2C bus.
+
+
 3) Device IO operations should be in their own thread.
 
 Axoloti uses ChibiOS which is a multi-threaded RTOS.
-The DSP thread hooks into the krate/srate functions of the patch and computes the audio.
+The DSP thread calls the krate/srate functions of the patch and computes the audio.
 The DSP thread needs to run as quickly as possible so it can feed the codec.
 So: The DSP thread should not be waiting around for external IO to take place.
-So: The I2C bus operations should be run in their own thread where they can run asynchronously without messing up the DSP thread.
+So: The I2C bus operations should be run in their own thread where they can run asynchronously without slowing down the DSP thread.
 
+Example:
 
-Because Axoloti uses ChibiOS, the drivers will try to access the bus at the same time, so we have to make sure the access is properly shared.
+  // create the polling thread
+  s->thd = chThdCreateStatic(s->thd_wa, sizeof(s->thd_wa), NORMALPRIO, ttp229_thread, (void *)s);
+
+and the thread needs to be terminated when the patch is finished....
+
+  // stop thread
+  chThdTerminate(s->thd);
+  chThdWait(s->thd);
+
 
 4) Lock/Unlock the I2C bus around bus operations.
 
-5) Lock shared memory access bewteen DSP and IO threads.
+With the IO operations for each device running in their own thread we have multiple threads each trying to access the I2C bus.
+The drivers will access the bus asynchronously, so we have to make sure the access is properly shared.
+ChibiOS provides functions to lock/unlock the bus: i2cAcquireBus(), i2cReleaseBus()
+A given thread needs to get the lock before it uses the bus and release the lock after it has finished with the bus.
+
+Example:
+
+  i2cAcquireBus(s->dev);
+  msg_t rc = i2cMasterReceiveTimeout(s->dev, s->adr, s->rx, 2, TTP229_I2C_TIMEOUT);
+  i2cReleaseBus(s->dev);
+
+It's up to the driver writer to minimise lock time and not hog the bus.
+
+5) Lock shared memory access between DSP and IO threads.
+
+In general the device driver IO thread and DSP thread need to communicate. 
+Example: The DSP thread will read the results of a key scan generated from the IO thread.
+Each thread needs to lock/unlock the shared memory between the threads so the read/write of that memory is consistent.
+
 
 Examples:
+
 
 
 
