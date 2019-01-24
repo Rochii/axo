@@ -1,0 +1,13 @@
+OLED driver chips:
+
+ssh1106 128x64
+
+ssd1351 128x128
+
+ssd1331 96x64
+
+ssd1306 128x64,128x32
+
+ssd1327 128x128 16/mono spi/i2c
+
+st7735 128x128 spi color 
