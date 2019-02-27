@@ -11,8 +11,8 @@ ifeq ($(BRANCH),master)
   CHIBIOS=ChibiOS_2.6.9.zip
   GCC=gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2
 else ifeq ($(BRANCH),experimental)
-  CHIBIOS=ChibiOS_18.2.0.zip
-  GCC=gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2
+  CHIBIOS=ChibiOS_18.2.1.zip
+  GCC=gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
 else
 
 endif
