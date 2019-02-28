@@ -1,0 +1,50 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="rei2c" uuid="881502d8-7250-45f4-a1ee-acd64d757a68">
+      <sDescription>I2C Rotary Encoder V2 Driver
+
+https://github.com/Fattoresaimon/I2CEncoderV2
+https://www.kickstarter.com/projects/1351830006/i2c-encoder-v2
+
+This object requires a single instance of the factory/gpio/i2c/config object.
+This allows multiple devices (each with a unique i2c address) to work concurrently.
+Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription>
+      <author>Jason Harris</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets>
+         <int32 name="val"/>
+      </outlets>
+      <displays/>
+      <params/>
+      <attribs>
+         <combo name="adr">
+            <MenuEntries>
+               <string>0x68</string>
+               <string>0x69</string>
+            </MenuEntries>
+            <CEntries>
+               <string>0x68</string>
+               <string>0x69</string>
+            </CEntries>
+         </combo>
+      </attribs>
+      <includes>
+         <include>./rei2c.h</include>
+      </includes>
+      <depends>
+         <depend>I2CD1</depend>
+      </depends>
+      <code.declaration><![CDATA[const struct rei2c_cfg config[5] = {
+  {REI2C_CVAL, 0}, // Counter Value
+  {REI2C_CMAX, 32}, // Counter Max value
+  {REI2C_CMIN, -32}, // Counter Min value
+  {REI2C_ISTEP, 1}, // Increment step value
+  {0xff, 0} // end-of-list
+};
+
+struct rei2c_state state;]]></code.declaration>
+      <code.init><![CDATA[rei2c_init(&state, &config[0], attr_adr);]]></code.init>
+      <code.dispose><![CDATA[rei2c_dispose(&state);]]></code.dispose>
+      <code.krate><![CDATA[rei2c_krate(&state, &outlet_val);]]></code.krate>
+   </obj.normal>
+</objdefs>
