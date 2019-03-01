@@ -6,7 +6,7 @@
    <obj type="rei2c/rei2c" uuid="881502d8-7250-45f4-a1ee-acd64d757a68" name="rei2c_1" x="28" y="56">
       <params/>
       <attribs>
-         <combo attributeName="adr" selection="0x68"/>
+         <combo attributeName="adr" selection="0x55"/>
       </attribs>
    </obj>
    <nets/>
@@ -15,8 +15,8 @@
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>697</x>
-      <y>92</y>
+      <x>899</x>
+      <y>34</y>
       <width>977</width>
       <height>789</height>
    </windowPos>

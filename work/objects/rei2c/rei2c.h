@@ -119,7 +119,27 @@ static int rei2c_rd8(struct rei2c_state *s, uint8_t reg, uint8_t * val) {
 	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 1, REI2C_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
-	*val = *(uint8_t *) s->rx;
+	*val = s->rx[0];
+	return (rc == MSG_OK) ? 0 : -1;
+}
+
+// read a 24 bit value from a register
+static int rei2c_rd24(struct rei2c_state *s, uint8_t reg, uint32_t * val) {
+	s->tx[0] = reg;
+	i2cAcquireBus(s->dev);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 3, REI2C_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
+	*val = (s->rx[0] << 16) | (s->rx[1] << 8) | s->rx[2];
+	return (rc == MSG_OK) ? 0 : -1;
+}
+
+// read a 32 bit value from a register
+static int rei2c_rd32(struct rei2c_state *s, uint8_t reg, uint32_t * val) {
+	s->tx[0] = reg;
+	i2cAcquireBus(s->dev);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 1, s->rx, 4, REI2C_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
+	*val = (s->rx[0] << 24) | (s->rx[1] << 16) | (s->rx[2] << 8) | s->rx[3];
 	return (rc == MSG_OK) ? 0 : -1;
 }
 
@@ -133,39 +153,29 @@ static int rei2c_wr8(struct rei2c_state *s, uint8_t reg, uint8_t val) {
 	return (rc == MSG_OK) ? 0 : -1;
 }
 
-// write an 32 bit value to a register
+// write a 24 bit value to a register
+static int rei2c_wr24(struct rei2c_state *s, uint8_t reg, uint32_t val) {
+	s->tx[0] = reg;
+	s->tx[1] = val >> 16;
+	s->tx[2] = val >> 8;
+	s->tx[3] = val;
+	i2cAcquireBus(s->dev);
+	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 4, NULL, 0, REI2C_I2C_TIMEOUT);
+	i2cReleaseBus(s->dev);
+	return (rc == MSG_OK) ? 0 : -1;
+}
+
+// write a 32 bit value to a register
 static int rei2c_wr32(struct rei2c_state *s, uint8_t reg, uint32_t val) {
 	s->tx[0] = reg;
 	s->tx[1] = val >> 24;
 	s->tx[2] = val >> 16;
 	s->tx[3] = val >> 8;
 	s->tx[4] = val;
-
 	i2cAcquireBus(s->dev);
 	msg_t rc = i2cMasterTransmitTimeout(s->dev, s->adr, s->tx, 5, NULL, 0, REI2C_I2C_TIMEOUT);
 	i2cReleaseBus(s->dev);
 	return (rc == MSG_OK) ? 0 : -1;
-}
-
-//-----------------------------------------------------------------------------
-
-// return non-zero if a new encoder value is available
-static int rei2c_poll(struct rei2c_state *s) {
-	uint8_t status;
-	rei2c_rd8(s, REI2C_ESTATUS, &status);
-
-	if (status & (REI2C_ESTATUS_RINC | REI2C_ESTATUS_RDEC)) {
-	}
-
-	if (status & REI2C_ESTATUS_PUSHR) {
-	}
-
-	if (status & REI2C_ESTATUS_PUSHP) {
-	}
-
-	if (status & REI2C_ESTATUS_PUSHD) {
-	}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -181,6 +191,44 @@ static void rei2c_error(struct rei2c_state *s, const char *msg) {
 		chThdSleepMilliseconds(100);
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+// return non-zero if a new encoder value is available
+static int rei2c_poll(struct rei2c_state *s) {
+
+	uint8_t status;
+	rei2c_rd8(s, REI2C_ESTATUS, &status);
+
+	if (status & (REI2C_ESTATUS_RINC | REI2C_ESTATUS_RDEC)) {
+		char tmp[64];
+		int32_t val;
+		rei2c_rd32(s, REI2C_CVAL, (uint32_t *) & val);
+		sprintf(tmp, "%d %s ", val, (status & REI2C_ESTATUS_RINC) ? "inc" : "dec");
+		if (status & REI2C_ESTATUS_RMAX) {
+			strcat(tmp, "max");
+		}
+		if (status & REI2C_ESTATUS_RMIN) {
+			strcat(tmp, "min");
+		}
+		rei2c_info(s, tmp);
+	}
+
+	if (status & REI2C_ESTATUS_PUSHR) {
+		rei2c_info(s, "pushr");
+	}
+
+	if (status & REI2C_ESTATUS_PUSHP) {
+		rei2c_info(s, "pushp");
+	}
+
+	if (status & REI2C_ESTATUS_PUSHD) {
+		rei2c_info(s, "pushd");
+	}
+
+}
+
+//-----------------------------------------------------------------------------
 
 static THD_FUNCTION(rei2c_thread, arg) {
 	struct rei2c_state *s = (struct rei2c_state *)arg;
@@ -202,6 +250,9 @@ static THD_FUNCTION(rei2c_thread, arg) {
 		rei2c_error(s, "i2c error");
 		goto exit;
 	}
+	// wait > 400 usecs
+	chThdSleepMilliseconds(1);
+
 	// check some register values
 	uint8_t val0, val1;
 	rei2c_rd8(s, REI2C_GP1CONF, &val0);

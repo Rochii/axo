@@ -19,12 +19,12 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
       <attribs>
          <combo name="adr">
             <MenuEntries>
-               <string>0x68</string>
-               <string>0x69</string>
+               <string>0x55</string>
+               <string>0xaa</string>
             </MenuEntries>
             <CEntries>
-               <string>0x68</string>
-               <string>0x69</string>
+               <string>0x55</string>
+               <string>0xaa</string>
             </CEntries>
          </combo>
       </attribs>
@@ -37,9 +37,9 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
       <code.declaration><![CDATA[const struct rei2c_cfg config[5] = {
   {REI2C_CVAL, 0}, // Counter Value
   {REI2C_CMAX, 32}, // Counter Max value
-  {REI2C_CMIN, -32}, // Counter Min value
+  {REI2C_CMIN, uint32_t(-32)}, // Counter Min value
   {REI2C_ISTEP, 1}, // Increment step value
-  {0xff, 0} // end-of-list
+  {0xff, 0}, // end-of-list
 };
 
 struct rei2c_state state;]]></code.declaration>
