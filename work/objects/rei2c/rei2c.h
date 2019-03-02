@@ -89,6 +89,13 @@ struct rei2c_state {
 	i2caddr_t adr;		// i2c device address
 	uint8_t *tx;		// i2c tx buffer
 	uint8_t *rx;		// i2c rx buffer
+	// shared variables
+	int32_t cval;		// counter value
+	bool cmin;		// counter reached minimum value
+	bool cmax;		// counter reached maximum value
+	bool button;		// button state
+	bool update_rgb;	// rgb needs to be updated
+	uint32_t rgb;		// rgb value
 };
 
 //-----------------------------------------------------------------------------
@@ -180,6 +187,46 @@ static int rei2c_wr32(struct rei2c_state *s, uint8_t reg, uint32_t val) {
 
 //-----------------------------------------------------------------------------
 
+// return non-zero if a new encoder value is available
+static int rei2c_poll(struct rei2c_state *s) {
+
+	uint8_t status;
+	rei2c_rd8(s, REI2C_ESTATUS, &status);
+
+	if (status & (REI2C_ESTATUS_RINC | REI2C_ESTATUS_RDEC)) {
+		uint32_t val;
+		rei2c_rd32(s, REI2C_CVAL, &val);
+		chSysLock();
+		s->cval = (int32_t) val;
+		s->cmax = ((status & REI2C_ESTATUS_RMAX) != 0);
+		s->cmin = ((status & REI2C_ESTATUS_RMIN) != 0);
+		chSysUnlock();
+	}
+
+	if (status & REI2C_ESTATUS_PUSHR) {
+		chSysLock();
+		s->button = false;
+		chSysUnlock();
+	}
+
+	if (status & REI2C_ESTATUS_PUSHP) {
+		chSysLock();
+		s->button = true;
+		chSysUnlock();
+	}
+
+	if (s->update_rgb) {
+		chSysLock();
+		uint32_t rgb = s->rgb;
+		s->update_rgb = false;
+		chSysUnlock();
+		rei2c_wr24(s, REI2C_RLED, rgb);
+	}
+
+}
+
+//-----------------------------------------------------------------------------
+
 static void rei2c_info(struct rei2c_state *s, const char *msg) {
 	LogTextMessage("rei2c(0x%x) %s", s->adr, msg);
 }
@@ -188,44 +235,8 @@ static void rei2c_error(struct rei2c_state *s, const char *msg) {
 	rei2c_info(s, msg);
 	// wait for the parent thread to kill us
 	while (!chThdShouldTerminate()) {
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(20);
 	}
-}
-
-//-----------------------------------------------------------------------------
-
-// return non-zero if a new encoder value is available
-static int rei2c_poll(struct rei2c_state *s) {
-
-	uint8_t status;
-	rei2c_rd8(s, REI2C_ESTATUS, &status);
-
-	if (status & (REI2C_ESTATUS_RINC | REI2C_ESTATUS_RDEC)) {
-		char tmp[64];
-		int32_t val;
-		rei2c_rd32(s, REI2C_CVAL, (uint32_t *) & val);
-		sprintf(tmp, "%d %s ", val, (status & REI2C_ESTATUS_RINC) ? "inc" : "dec");
-		if (status & REI2C_ESTATUS_RMAX) {
-			strcat(tmp, "max");
-		}
-		if (status & REI2C_ESTATUS_RMIN) {
-			strcat(tmp, "min");
-		}
-		rei2c_info(s, tmp);
-	}
-
-	if (status & REI2C_ESTATUS_PUSHR) {
-		rei2c_info(s, "pushr");
-	}
-
-	if (status & REI2C_ESTATUS_PUSHP) {
-		rei2c_info(s, "pushp");
-	}
-
-	if (status & REI2C_ESTATUS_PUSHD) {
-		rei2c_info(s, "pushd");
-	}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -238,8 +249,8 @@ static THD_FUNCTION(rei2c_thread, arg) {
 	rei2c_info(s, "starting thread");
 
 	// allocate i2c buffers
-	s->tx = (uint8_t *) rei2c_malloc(5);
-	s->rx = (uint8_t *) rei2c_malloc(4);
+	s->tx = (uint8_t *) rei2c_malloc(8);
+	s->rx = (uint8_t *) rei2c_malloc(8);
 	if (s->rx == NULL || s->tx == NULL) {
 		rei2c_error(s, "out of memory");
 		goto exit;
@@ -274,11 +285,9 @@ static THD_FUNCTION(rei2c_thread, arg) {
 
 	// poll for the changes
 	while (!chThdShouldTerminate()) {
-		if (rei2c_poll(s)) {
-			// TODO ...
-		}
-		// 50Hz polling interval
-		chThdSleepMilliseconds(20);
+		rei2c_poll(s);
+		// 20Hz polling interval
+		chThdSleepMilliseconds(50);
 	}
 
  exit:
@@ -304,8 +313,24 @@ static void rei2c_dispose(struct rei2c_state *s) {
 	chThdWait(s->thd);
 }
 
-static void rei2c_krate(struct rei2c_state *s, int32_t * val) {
+static void rei2c_krate(struct rei2c_state *s, int32_t r, int32_t g, int32_t b, int32_t * cval, bool * cmax, bool * cmin, bool * button) {
+
+	uint32_t rgb = ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+	static uint32_t old_rgb;
+
+	if (rgb != old_rgb) {
+		chSysLock();
+		s->update_rgb = true;
+		s->rgb = rgb;
+		chSysUnlock();
+		old_rgb = rgb;
+	}
+
 	chSysLock();
+	*cval = s->cval;
+	*cmin = s->cmin;
+	*cmax = s->cmax;
+	*button = s->button;
 	chSysUnlock();
 }
 

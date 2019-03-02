@@ -10,20 +10,31 @@ This allows multiple devices (each with a unique i2c address) to work concurrent
 Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription>
       <author>Jason Harris</author>
       <license>BSD</license>
-      <inlets/>
+      <inlets>
+         <int32 name="r"/>
+         <int32 name="g" description="green"/>
+         <int32 name="b" description="blue"/>
+      </inlets>
       <outlets>
-         <int32 name="val"/>
+         <int32 name="val" description="counter value"/>
+         <bool32 name="max" description="counter max has been reached"/>
+         <bool32 name="min" description="counter min has been reached"/>
+         <bool32 name="button"/>
       </outlets>
       <displays/>
       <params/>
       <attribs>
          <combo name="adr">
             <MenuEntries>
+               <string>0x36</string>
                <string>0x55</string>
+               <string>0x66</string>
                <string>0xaa</string>
             </MenuEntries>
             <CEntries>
+               <string>0x36</string>
                <string>0x55</string>
+               <string>0x66</string>
                <string>0xaa</string>
             </CEntries>
          </combo>
@@ -34,7 +45,8 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
       <depends>
          <depend>I2CD1</depend>
       </depends>
-      <code.declaration><![CDATA[const struct rei2c_cfg config[5] = {
+      <code.declaration><![CDATA[const struct rei2c_cfg config[6] = {
+  {REI2C_GCONF, REI2C_GCONF_ETYPE},
   {REI2C_CVAL, 0}, // Counter Value
   {REI2C_CMAX, 32}, // Counter Max value
   {REI2C_CMIN, uint32_t(-32)}, // Counter Min value
@@ -45,6 +57,6 @@ Tested with I2C1, SCL=PB8, SDA=PB9 (these are the config defaults)</sDescription
 struct rei2c_state state;]]></code.declaration>
       <code.init><![CDATA[rei2c_init(&state, &config[0], attr_adr);]]></code.init>
       <code.dispose><![CDATA[rei2c_dispose(&state);]]></code.dispose>
-      <code.krate><![CDATA[rei2c_krate(&state, &outlet_val);]]></code.krate>
+      <code.krate><![CDATA[rei2c_krate(&state, inlet_r, inlet_g, inlet_b, &outlet_val, &outlet_max, &outlet_min, &outlet_button);]]></code.krate>
    </obj.normal>
 </objdefs>
